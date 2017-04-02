@@ -173,7 +173,13 @@ function build_toolchain_file()
 	sed "s|<placeholder_rootfs>|$rootfsDir|g" ./scripts/pi.cmake.template | sed "s|<placeholder_bin>|$binDir|g" > ./scripts/pi.cmake
 }
 
+if [ "$0" != "scripts/dev_setup.sh" ]; then
+	echo "This script must be run from the root of the repository. Exiting"
+	exit 1
+fi
+
 startDir=$(pwd)
+
 get_install_dir
 setup_install_fs
 download_and_extract_noobs
