@@ -5,16 +5,18 @@ OBJ = $(patsubst %.c,%.o,$(SRC))
 
 INCLUDES = -I../../include
 INCLUDES += -I./include
-INCLUDES += -I/usr/include
-INCLUDES += -I/usr/local/include
+INCLUDES += -I$(PREFIX)/usr/include
+INCLUDES += -I$(PREFIX)/usr/local/include
 
 LIBS = -lbcm2835 -lpifly
-LIB_DIRS = -L/usr/local/lib -L../../
+LIB_DIRS = -L$(PREFIX)/usr/local/lib -L../../
 
-CFLAGS = $(INCLUDES) -g
+CFLAGS = $(INCLUDES) -g --sysroot=/media/rrau/root
 LFLAGS = $(LIB_DIRS) $(LIBS)
 
-CC = gcc
+#CC = gcc
+CC = arm-linux-gnueabihf-gcc
+AR = arm-linux-gnueabihf-ar
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
