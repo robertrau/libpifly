@@ -173,12 +173,32 @@ function build_toolchain_file()
 	sed "s|<placeholder_rootfs>|$rootfsDir|g" ./scripts/pi.cmake.template | sed "s|<placeholder_bin>|$binDir|g" > ./scripts/pi.cmake
 }
 
+function check_for()
+{
+	program=$1
+	echo "Checking to make sure $program is installed"
+	searchRes=$(whereis $program | sed "s/$program://g")
+	if [ -n "$searchRes" ]; then
+		echo "Found $program"
+	else
+		echo "Could not find $program, exiting"
+		exit 1
+	fi
+}
+
 if [ "$0" != "scripts/dev_setup.sh" ]; then
 	echo "This script must be run from the root of the repository. Exiting"
 	exit 1
 fi
 
 startDir=$(pwd)
+
+check_for "git"
+check_for "cmake"
+check_for "unzip"
+check_for "tar"
+check_for "curl"
+check_for "sed"
 
 get_install_dir
 setup_install_fs
