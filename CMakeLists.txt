@@ -7,7 +7,6 @@ project(libpifly)
 
 file(GLOB SOURCES "src/*/*.cpp")
 
-set(CXXFLAGS)
 set(${PROJECT_NAME}_INCLUDE_DIRS include 
 								 ${CMAKE_SYSROOT}/usr/local/include
 								 CACHE INTERNAL "${PROJECT_NAME}: Include Directories" FORCE)
