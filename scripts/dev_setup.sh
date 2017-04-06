@@ -186,7 +186,7 @@ function check_for()
 	fi
 }
 
-if [ "$0" != "scripts/dev_setup.sh" ]; then
+if [ "$0" != "scripts/dev_setup.sh" ] && [ "$0" != "./scripts/dev_setup.sh" ]; then
 	echo "This script must be run from the root of the repository. Exiting"
 	exit 1
 fi
