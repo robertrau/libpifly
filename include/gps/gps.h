@@ -6,8 +6,16 @@
 #include <sstream>
 #include <vector>
 
-#include <errno.h>
 #include <string.h>
+
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <termios.h>
+#include <unistd.h>
+
+#include "comm/serialport.h"
 
 namespace PiFly
 {
@@ -18,6 +26,8 @@ namespace PiFly
 		using std::exception;
 		using std::stringstream;
 
+		using PiFly::Comm::SerialPort;
+		
 		class GpsException : public exception
 		{
 		public:
@@ -25,29 +35,6 @@ namespace PiFly
 			{
 
 			}
-		};
-
-		class GpsFdException : public GpsException
-		{
-		public:
-			GpsFdException(int _err, string file=__FILE__, int line=__LINE__) : GpsException(),
-				err(_err)
-			{
-
-			}
-
-			virtual const char* what() const noexcept
-			{
-				stringstream ss;
-				ss << "GPS file descriptor error. errno = ";
-				ss << err;
-				ss << ": ";
-				ss << strerror(err);
-				return ss.str().c_str();
-			}
-
-		private:
-			int err;
 		};
 
 		struct GPSResult
@@ -60,7 +47,7 @@ namespace PiFly
 		class GlobalPositioningSystem
 		{
 		public:
-			GlobalPositioningSystem(string tty);
+			GlobalPositioningSystem(SerialPort& serialPort);
 			virtual ~GlobalPositioningSystem();
 
 			void start();
@@ -74,7 +61,8 @@ namespace PiFly
 			} */
 			void sendCommand();
 
-			int gpsTTY;
+
+			SerialPort& mSerialPort;
 		};
 	}
 }

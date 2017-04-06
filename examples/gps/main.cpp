@@ -4,18 +4,23 @@
 
 using PiFly::GPS::GlobalPositioningSystem;
 using PiFly::GPS::GpsException;
+using PiFly::Comm::SerialPort;
 
 int main(int argc, char** argv)
 {
 	try
 	{
-		GlobalPositioningSystem gps("/dev/serial0");
+		SerialPort serialPort("/dev/serial0");
+		GlobalPositioningSystem gps(serialPort);
 
+		std::cout << "Starting gps" << std::endl;
 		gps.start();
 
-		auto sampleBuff = gps.getLatestSamples();
-		sampleBuff = gps.getLatestSamples();
-		sampleBuff = gps.getLatestSamples();
+		while(true)
+		{
+			auto sampleBuff = gps.getLatestSamples();
+		}
+
 	}
 	catch(GpsException& ex)
 	{
