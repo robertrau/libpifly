@@ -11,9 +11,14 @@ set(${PROJECT_NAME}_INCLUDE_DIRS include
 								 ${CMAKE_SYSROOT}/usr/local/include
 								 CACHE INTERNAL "${PROJECT_NAME}: Include Directories" FORCE)
 
+set(${PROJECT_NAME}_LINK_LIBS pthread
+							  bcm2835
+							  libpifly 
+							  CACHE INTERNAL "${PROJECT_NAME}: Link libs" FORCE)
+
 include_directories(${${PROJECT_NAME}_INCLUDE_DIRS})
 
-add_compile_options(-std=c++11)
+add_compile_options(-pthread -std=c++11)
 
 add_subdirectory(examples/adc)
 add_subdirectory(examples/gps)

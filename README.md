@@ -1,5 +1,5 @@
 # libpifly
-C library for PiFly HAT board. See www.rau-deaver.org/Project_PiFly.html
+C++ library for PiFly HAT board. See www.rau-deaver.org/Project_PiFly.html
 
 
 # The PiFly board, the reason for libpifly

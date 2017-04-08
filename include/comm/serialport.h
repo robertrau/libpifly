@@ -1,6 +1,7 @@
 #ifndef LIBPIFLY_COMM_SERIALPORT_H
 #define LIBPIFLY_COMM_SERIALPORT_H
 
+#include <array>
 #include <exception>
 #include <string>
 #include <sstream>
@@ -15,51 +16,24 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "comm/commexception.h"
+
 namespace PiFly
 {
 	namespace Comm
 	{
+		using std::array;
 		using std::string;
 		using std::vector;
-		using std::exception;
 		using std::stringstream;
-
-		class CommException : public exception
-		{
-		public:
-			CommException()
-			{
-
-			}
-		};
-
-		class CommFdException : public CommException
-		{
-		public:
-			CommFdException(int _err, string file=__FILE__, int line=__LINE__) : CommException(),
-				err(_err)
-			{
-
-			}
-
-			virtual const char* what() const noexcept
-			{
-				stringstream ss;
-				ss << "Communication file descriptor error. errno = ";
-				ss << err;
-				ss << ": ";
-				ss << strerror(err);
-				return ss.str().c_str();
-			}
-
-		private:
-			int err;
-		};
 
 		class SerialPort
 		{
 		public:
 			typedef vector<uint8_t> SerialBuffer;
+			template<size_t size>
+			using SerialArray = array<uint8_t, size>;
+
 			typedef enum
 			{
 				Baudrate_0,
@@ -86,7 +60,26 @@ namespace PiFly
 			SerialPort(string devPath, Baudrate baud);
 			virtual ~SerialPort();
 
-			size_t read(SerialBuffer& buffer, size_t readBytes);
+			template<size_t size>
+			size_t read(typename SerialArray<size>::iterator first)
+			{
+				int resp = ::read(serialFd, static_cast<void*>(&(*first)), size);
+				
+				if(resp > 0)
+				{
+					return resp;
+				}
+				else if(resp == 0)
+				{
+					throw CommFdException(errno);
+				}
+				else
+				{
+					throw CommFdException(resp);
+				}
+			}
+
+			size_t read(SerialBuffer::iterator first, size_t readBytes);
 			void write(const SerialBuffer& buffer);
 
 			void setBaudrate(Baudrate baud);

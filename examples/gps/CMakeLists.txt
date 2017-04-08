@@ -8,4 +8,4 @@ file(GLOB SOURCES "*.cpp")
 
 link_directories(${CMAKE_SYSROOT}/usr/local/lib)
 add_executable(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} bcm2835 libpifly)
+target_link_libraries(${PROJECT_NAME} ${libpifly_LINK_LIBS})

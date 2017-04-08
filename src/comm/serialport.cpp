@@ -1,4 +1,5 @@
 #include "comm/serialport.h"
+#include "comm/commexception.h"
 
 #include <iostream>
 
@@ -43,9 +44,9 @@ namespace PiFly
 			}
 		}
 
-		size_t SerialPort::read(SerialBuffer& buffer, size_t readBytes)
+		size_t SerialPort::read(SerialBuffer::iterator first, size_t readBytes)
 		{
-			int resp = ::read(serialFd, static_cast<void*>(buffer.data()), readBytes);
+			int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
 			
 			if(resp > 0)
 			{
@@ -87,8 +88,7 @@ namespace PiFly
 		{
 			int resp = cfsetispeed(&serialTTY, linuxBaudrateMap(baud));
 			resp = cfsetospeed(&serialTTY, linuxBaudrateMap(baud));
-			// make a raw serial port
-			//cfmakeraw(&serialTTY);
+
 			if(tcsetattr(serialFd, TCSANOW, &serialTTY) != 0)
 			{
 				throw CommFdException(errno);

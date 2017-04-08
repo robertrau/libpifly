@@ -4,8 +4,13 @@
 #include <signal.h>
 
 #include "gps/gps.h"
+#include "gps/gpsexception.h"
+#include "gps/skytraqbinaryprotocol.h"
+#include "comm/commexception.h"
 
 using PiFly::GPS::GlobalPositioningSystem;
+using PiFly::GPS::SkyTraqBinaryProtocol;
+using PiFly::GPS::ResultVector;
 using PiFly::GPS::GpsException;
 using PiFly::Comm::SerialPort;
 using PiFly::Comm::CommException;
@@ -24,16 +29,21 @@ int main(int argc, char** argv)
 	try
 	{
 		SerialPort serialPort("/dev/serial0", SerialPort::Baudrate_230400);
-		GlobalPositioningSystem gps(serialPort);
+		SkyTraqBinaryProtocol protocol(serialPort);
+		GlobalPositioningSystem gps(protocol);
 
 		std::cout << "Starting gps" << std::endl;
 		gps.start();
 
+		const size_t sampleBuffSize = 512;
+		ResultVector sampleBuff(sampleBuffSize);
 		while(!interrupted.load())
 		{
-			auto sampleBuff = gps.getLatestSamples();
+			gps.getLatestSamples(sampleBuff);
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		}
 
+		gps.stop();
 	}
 	catch(GpsException& ex)
 	{

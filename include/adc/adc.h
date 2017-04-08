@@ -1,5 +1,5 @@
-#ifndef LIBPIFLY_ADC_H
-#define LIBPIFLY_ADC_H
+#ifndef LIBPIFLY_ADC_ADC_H
+#define LIBPIFLY_ADC_ADC_H
 
 #include <string>
 
@@ -19,5 +19,5 @@ namespace PiFly
 	}
 }
 
-#endif // LIBPIFLY_ADC_H
+#endif // LIBPIFLY_ADC_ADC_H
 
