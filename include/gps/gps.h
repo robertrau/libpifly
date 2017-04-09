@@ -1,7 +1,12 @@
+/*
+	Author: Robert F. Rau II
+	Copyright (C) 2017 Robert F. Rau II
+*/
 #ifndef LIBPIFLY_GPS_GPS_H
 #define LIBPIFLY_GPS_GPS_H
 
 #include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -37,8 +42,10 @@ namespace PiFly
 			unique_ptr<thread> mRunThread;
 			IGpsProtocol& mProtocol;
 			mutex mResultMutex;
+			std::condition_variable mNotify;
 			const size_t mResultBufferSize = 512;
 			ResultVector mResultBuffer;
+			bool mResultReady;
 		};
 	}
 }

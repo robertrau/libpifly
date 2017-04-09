@@ -1,3 +1,7 @@
+/*
+	Author: Robert F. Rau II
+	Copyright (C) 2017 Robert F. Rau II
+*/
 #ifndef LIBPIFLY_GPS_NMEAPROTOCOL_H
 #define LIBPIFLY_GPS_NMEAPROTOCOL_H
 

@@ -1,3 +1,7 @@
+/*
+	Author: Robert F. Rau II
+	Copyright (C) 2017 Robert F. Rau II
+*/
 #include <atomic>
 #include <iostream>
 
@@ -40,7 +44,11 @@ int main(int argc, char** argv)
 		while(!interrupted.load())
 		{
 			gps.getLatestSamples(sampleBuff);
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+			for(uint32_t i = 0; i < sampleBuff.size(); i++)
+			{
+				std::cout << "FixType: " << sampleBuff[i].fixType << " Satellites in view: " << static_cast<uint32_t>(sampleBuff[i].satellitesInView) << " mean sea level: " << sampleBuff[i].meanSeaLevel << " lat: " << sampleBuff[i].latitude << " long: " << sampleBuff[i].longitude << "\n";
+			}
 		}
 
 		gps.stop();

@@ -1,3 +1,7 @@
+/*
+	Author: Robert F. Rau II
+	Copyright (C) 2017 Robert F. Rau II
+*/
 #ifndef LIBPIFLY_COMM_SERIALPORT_H
 #define LIBPIFLY_COMM_SERIALPORT_H
 
@@ -79,7 +83,50 @@ namespace PiFly
 				}
 			}
 
+			template<size_t size>
+			size_t read(typename SerialArray<size>::iterator first, size_t readBytes)
+			{
+				int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
+				
+				if(resp > 0)
+				{
+					return resp;
+				}
+				else if(resp == 0)
+				{
+					throw CommFdException(errno);
+				}
+				else
+				{
+					throw CommFdException(resp);
+				}
+			}
+
 			size_t read(SerialBuffer::iterator first, size_t readBytes);
+
+			template <size_t size>
+			void write(const SerialArray<size>& buffer)
+			{
+				size_t bytesWritten = 0;
+				ssize_t resp;
+				do
+				{
+					resp = ::write(serialFd, static_cast<const void*>(buffer.data()), size);
+					if(resp > 0)
+					{
+						bytesWritten += resp;
+					}
+					else if(resp == 0)
+					{
+						throw CommFdException(errno);
+					}
+					else
+					{
+						throw CommFdException(resp);
+					}
+				} while(bytesWritten < buffer.size());
+			}
+
 			void write(const SerialBuffer& buffer);
 
 			void setBaudrate(Baudrate baud);

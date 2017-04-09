@@ -1,3 +1,7 @@
+/*
+	Author: Robert F. Rau II
+	Copyright (C) 2017 Robert F. Rau II
+*/
 #ifndef LIBPIFLY_ADC_ADC_H
 #define LIBPIFLY_ADC_ADC_H
 

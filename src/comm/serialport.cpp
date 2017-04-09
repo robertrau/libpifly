@@ -1,3 +1,7 @@
+/*
+	Author: Robert F. Rau II
+	Copyright (C) 2017 Robert F. Rau II
+*/
 #include "comm/serialport.h"
 #include "comm/commexception.h"
 

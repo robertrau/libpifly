@@ -1,3 +1,7 @@
+/*
+	Author: Robert F. Rau II
+	Copyright (C) 2017 Robert F. Rau II
+*/
 #include <array>
 #include <iostream>
 
@@ -10,30 +14,131 @@ namespace PiFly
 	{
 		using std::array;
 
+		template<typename T, size_t size>
+		T extract(SerialPort::SerialArray<size>& buffer, size_t& offset)
+		{
+			T result = 0;
+			for(uint32_t i = 0; i < sizeof(T); i++)
+			{
+				result |= buffer[offset + i] << (sizeof(T) - i - 1)*sizeof(uint8_t);
+			}
+			offset += sizeof(T);
+			return result;
+		}
+
 		SkyTraqBinaryProtocol::SkyTraqBinaryProtocol(SerialPort& serialPort) :
-			mSerialPort(serialPort)
+			mSerialPort(serialPort),
+			mHaveResult(false)
 		{
 			auto currentBaudrate = mSerialPort.getBaudrate();
 			autoNegotiateBaudrate();
 			updateBaudrate(currentBaudrate);
+			setMessageType(MessageType_Binary);
 		}
 
 		const bool SkyTraqBinaryProtocol::haveResult() const
 		{
-			return false;
+			return mHaveResult;
 		}
 
 		void SkyTraqBinaryProtocol::update()
 		{
 			SerialArray<updateBufferSize> buffer;
-			buffer.fill('\0');
-			auto bytesRead = mSerialPort.read<updateBufferSize>(buffer.begin());
-			std::cout << buffer.data();
+			bool goodChecksum = false;
+			bool haveMessage = false;
+			do
+			{
+				uint8_t startMsgByte;
+				auto bytesRead = mSerialPort.read<1>(&startMsgByte);
+				if(startMsgByte != MSG_START_1)
+				{
+					continue;
+				}
+
+				buffer[0] = startMsgByte;
+				bytesRead += mSerialPort.read<1>(&startMsgByte);
+				if(startMsgByte != MSG_START_2)
+				{
+					continue;
+				}
+
+				haveMessage = true;
+
+				buffer[1] = startMsgByte;
+				do
+				{
+					bytesRead += mSerialPort.read<updateBufferSize>(buffer.begin() + bytesRead, cmdByteIdx - bytesRead);
+				} while(bytesRead < cmdByteIdx);
+
+				uint16_t payloadSize = (buffer[2] << 8) | buffer[3];
+
+				if((payloadSize + overheadSize) > updateBufferSize)
+				{
+					std::cout << "WARNING: incoming message tooooo large, skipping!\n";
+					continue;
+				}
+
+				do
+				{
+					bytesRead += mSerialPort.read<updateBufferSize>(buffer.begin() + bytesRead, (payloadSize + overheadSize) - bytesRead);
+				} while(bytesRead < (payloadSize + overheadSize));
+
+				if((*(buffer.begin() + bytesRead - 1) == MSG_END_2) && (*(buffer.begin() + bytesRead - 2) == MSG_END_1))
+				{
+					auto checksum = computeChecksum<updateBufferSize>(payloadSize, buffer);
+					auto checksumIdx = payloadSize + cmdByteIdx;
+
+					if(checksum == buffer[checksumIdx])
+					{
+						goodChecksum = true;
+					}
+				}
+			} while(!haveMessage);
+
+			if(goodChecksum)
+			{
+				Command cmd = static_cast<Command>(buffer[cmdByteIdx]);
+
+				if(cmd == Command_NavDataMsg)
+				{
+					size_t offset = cmdByteIdx + 1;
+					
+					mGpsResult.fixType = static_cast<FixType>(buffer[offset] + 1);
+					offset++;
+
+					// skip num sv
+					mGpsResult.satellitesInView = static_cast<FixType>(buffer[offset]);
+					offset++;
+
+					// skip GNSS week
+					(void)extract<uint16_t, updateBufferSize>(buffer, offset);
+
+					// skip TOW
+					(void)extract<uint32_t, updateBufferSize>(buffer, offset);
+
+					mGpsResult.latitude = extract<int32_t, updateBufferSize>(buffer, offset);
+					mGpsResult.longitude = extract<int32_t, updateBufferSize>(buffer, offset);
+
+					// skip ellipsiod altitude
+					extract<uint32_t, updateBufferSize>(buffer, offset);
+
+					mGpsResult.meanSeaLevel = extract<uint32_t, updateBufferSize>(buffer, offset);
+
+					mGpsResult.gdop = extract<uint16_t, updateBufferSize>(buffer, offset);
+					mGpsResult.pdop = extract<uint16_t, updateBufferSize>(buffer, offset);
+					mGpsResult.hdop = extract<uint16_t, updateBufferSize>(buffer, offset);
+					mGpsResult.vdop = extract<uint16_t, updateBufferSize>(buffer, offset);
+					mGpsResult.tdop = extract<uint16_t, updateBufferSize>(buffer, offset);
+
+					mHaveResult = true;
+				}
+			}
 		}
 
 		GpsResult SkyTraqBinaryProtocol::getResult()
 		{
-			return GpsResult();
+			mHaveResult = false;
+			return mGpsResult;
 		}
 
 		void SkyTraqBinaryProtocol::autoNegotiateBaudrate()
@@ -87,7 +192,7 @@ namespace PiFly
 
 		void SkyTraqBinaryProtocol::updateBaudrate(SerialPort::Baudrate baud)
 		{
-			SerialBuffer command(11);
+			SerialArray<4> command;
 			uint8_t gpsBaud;
 			switch(baud)
 			{
@@ -113,23 +218,18 @@ namespace PiFly
 				gpsBaud = 6;
 				break;
 			default:
-				throw GpsException("Unsupported baudrate");
+				stringstream ss;
+				ss << "Unsupported baudrate ";
+				ss << SerialPort::baudrateString(baud);
+				throw GpsException(ss.str());
 			}
 
-			uint16_t payloadLength = 4;
-			command[0] = MSG_START_1;
-			command[1] = MSG_START_2;
-			command[2] = payloadLength >> 8;
-			command[3] = payloadLength;
-			command[4] = Command_ConfigSerial;
-			command[5] = 0; // COM 1
-			command[6] = gpsBaud;
-			command[7] = 0; // Update to SRAM
-			command[8] = computeChecksum(payloadLength, command);
-			command[9] = MSG_END_1;
-			command[10] = MSG_END_2;
+			command[0] = Command_ConfigSerial;
+			command[1] = 0; // COM 1
+			command[2] = gpsBaud;
+			command[3] = 0; // Update to SRAM
 
-			sendCommand(command);
+			sendCommand<4>(command);
 
 			try
 			{
@@ -145,9 +245,11 @@ namespace PiFly
 			}
 			catch(GpsFormatException& ex)
 			{
+				// try one more time to make sure the baudrate took. Sometimes the first receive fails even if it worked.
 				mSerialPort.setBaudrate(baud);
 				mSerialPort.flush();
-				sendCommand(command);
+
+				sendCommand<4>(command);
 				if(!receiveAckNack())
 				{
 					throw GpsNackException("Received NACK on Config Serial Port command");
@@ -159,9 +261,18 @@ namespace PiFly
 			}
 		}
 
-		void SkyTraqBinaryProtocol::sendCommand(const SerialBuffer& command)
+		void SkyTraqBinaryProtocol::setMessageType(MessageType messageType)
 		{
-			mSerialPort.write(command);
+			SerialArray<3> command;
+			command[0] = Command_MessageType;
+			command[1] = messageType;
+			command[2] = 0; // update to SRAM
+
+			sendCommand<3>(command);
+			if(!receiveAckNack())
+			{
+				throw GpsNackException("Received NACK on message type command");
+			}
 		}
 
 		bool SkyTraqBinaryProtocol::receiveAckNack()
@@ -233,7 +344,7 @@ namespace PiFly
 		{
 			uint8_t checksum = 0;
 
-			if((commandBuffer.size() - 7) != payloadLength)
+			if((commandBuffer.size() - overheadSize) != payloadLength)
 			{
 				throw GpsException("commandBuffer is not the correct size");
 			}

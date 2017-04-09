@@ -1,3 +1,7 @@
+/*
+	Author: Robert F. Rau II
+	Copyright (C) 2017 Robert F. Rau II
+*/
 #include "gps/gps.h"
 #include "gps/gpsexception.h"
 
@@ -8,10 +12,12 @@ namespace PiFly
 	namespace GPS
 	{
 		GlobalPositioningSystem::GlobalPositioningSystem(IGpsProtocol& protocol) :
-			mProtocol(protocol)
+			mProtocol(protocol),
+			mResultReady(false)
 		{
 			mRunning.store(false);
 			mResultBuffer.reserve(mResultBufferSize);
+			mResultBuffer.resize(0);
 		}
 
 		GlobalPositioningSystem::~GlobalPositioningSystem()
@@ -39,21 +45,27 @@ namespace PiFly
 						mProtocol.update();
 					}
 
-					auto result = mProtocol.getResult();
+					GpsResult result = mProtocol.getResult();
 
-					mResultMutex.lock();
-					mResultBuffer.push_back(result);
-					mResultMutex.unlock();
+
+					{
+						std::unique_lock<mutex> lck(mResultMutex);
+						mResultBuffer.push_back(result);
+						mResultReady = true;
+						mNotify.notify_one();
+					}
 				}
 			}));
 		}
 
 		void GlobalPositioningSystem::getLatestSamples(ResultVector& resultVector)
 		{
-			std::lock_guard<mutex> lock(mutex);
+			std::unique_lock<mutex> lock(mResultMutex);
+			while(!mResultReady) { mNotify.wait(lock); }
 			resultVector.resize(mResultBuffer.size());
 			std::copy(mResultBuffer.begin(), mResultBuffer.end(), resultVector.begin());
 			mResultBuffer.resize(0);
+			mResultReady = false;
 		}
 	}
 }
