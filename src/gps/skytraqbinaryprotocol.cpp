@@ -34,6 +34,7 @@ namespace PiFly
 			autoNegotiateBaudrate();
 			updateBaudrate(currentBaudrate);
 			setMessageType(MessageType_Binary);
+			setPositionUpdateRate(50);
 		}
 
 		const bool SkyTraqBinaryProtocol::haveResult() const
@@ -132,6 +133,22 @@ namespace PiFly
 
 					mHaveResult = true;
 				}
+			}
+		}
+
+		void SkyTraqBinaryProtocol::setPositionUpdateRate(uint8_t positionRate)
+		{
+			const size_t payloadLength = 3;
+			SerialArray<payloadLength> command;
+
+			command[0] = Command_ConfigPositionRate;
+			command[1] = positionRate;
+			command[2] = 0; // update to SRAM
+
+			sendCommand<payloadLength>(command);
+			if(!receiveAckNack())
+			{
+				throw GpsNackException("Received NACK on position rate command");
 			}
 		}
 

@@ -44,6 +44,7 @@ namespace PiFly
 				Command_ConfigSerial = 0x5,
 				Command_ConfigNMEA = 0x8,
 				Command_MessageType = 0x9,
+				Command_ConfigPositionRate = 0xE,
 				Command_ConfigNavInterval = 0x11,
 				Command_ACK = 0x83,
 				Command_NACK = 0x84,
@@ -70,6 +71,7 @@ namespace PiFly
 			}
 
 			void updateBaudrate(SerialPort::Baudrate baud);
+			void setPositionUpdateRate(uint8_t positionRate);
 
 			typedef enum
 			{
@@ -102,7 +104,6 @@ namespace PiFly
 			void autoNegotiateBaudrate();
 
 			SerialPort& mSerialPort;
-			SerialBuffer mMessageBuffer;
 			bool mHaveResult;
 			GpsResult mGpsResult;
 		};
