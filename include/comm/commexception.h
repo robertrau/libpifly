@@ -22,16 +22,26 @@ namespace PiFly
 		class CommException : public exception
 		{
 		public:
-			CommException()
+			CommException() {}
+			CommException(string msg) :
+				mMessage(msg)
 			{
 
 			}
+
+			virtual const char* what() const noexcept
+			{
+				return mMessage.c_str();
+			}
+
+		private:
+			string mMessage;
 		};
 
 		class CommFdException : public CommException
 		{
 		public:
-			CommFdException(int _err, string file=__FILE__, int line=__LINE__) : CommException(),
+			CommFdException(int _err, string file=__FILE__, int line=__LINE__) : 
 				err(_err)
 			{
 
@@ -49,6 +59,12 @@ namespace PiFly
 
 		private:
 			int err;
+		};
+
+		class CommTimeoutException : public CommException
+		{
+		public:
+			CommTimeoutException(string msg) : CommException(msg) {}
 		};
 	}
 }

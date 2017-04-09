@@ -152,6 +152,9 @@ namespace PiFly
 					return Baudrate_115200;
 				case B230400:
 					return Baudrate_230400;
+				default:
+					std::cout << "linuxBaudrateMap speed_t Input baud: " << baud << "\n";
+					throw CommException("Unsupported baudrate");
 			}
 		}
 
@@ -197,6 +200,9 @@ namespace PiFly
 					return B115200;
 				case Baudrate_230400:
 					return B230400;
+				default:
+					std::cout << "linuxBaudrateMap Baudrate Input baud: " << baud << "\n";
+					throw CommException("Unsupported baudrate");
 			}
 		}
 
@@ -242,6 +248,8 @@ namespace PiFly
 					return "115200";
 				case Baudrate_230400:
 					return "230400";
+				default:
+					return "unsupported";
 			}
 		}
 	}

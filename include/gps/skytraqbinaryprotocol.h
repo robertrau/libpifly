@@ -31,8 +31,8 @@ namespace PiFly
 
 		private:
 
+			constexpr static double ackNackReceiveTimeout = 0.5;
 			const static size_t overheadSize = 7;
-			//const static size_t updateBufferSize = 59 + overheadSize;
 			const static size_t updateBufferSize = 128;
 			const static size_t cmdByteIdx = 4;
 			const uint8_t MSG_START_1 = 0xA0;
@@ -70,7 +70,7 @@ namespace PiFly
 				return checksum;
 			}
 
-			void updateBaudrate(SerialPort::Baudrate baud);
+			void updateBaudrate(const SerialPort::Baudrate baud);
 			void setPositionUpdateRate(uint8_t positionRate);
 
 			typedef enum

@@ -3,8 +3,10 @@
 	Copyright (C) 2017 Robert F. Rau II
 */
 #include <array>
+#include <chrono>
 #include <iostream>
 
+#include "comm/commexception.h"
 #include "gps/gpsexception.h"
 #include "gps/skytraqbinaryprotocol.h"
 
@@ -178,18 +180,18 @@ namespace PiFly
 			{
 				try
 				{
+					std::cout << "Trying baudrate of " << SerialPort::baudrateString(baudrates[currentBaud]) << "\n";
 					mSerialPort.setBaudrate(baudrates[currentBaud]);
-					std::this_thread::sleep_for(std::chrono::milliseconds(30));
 					updateBaudrate(baudrates[currentBaud]);
 					foundBaud = true;
 				}
-				catch(GpsFormatException& ex)
+				catch(...)
 				{
-					if(currentBaud < MAX_BAUDS)
+					if(currentBaud < MAX_BAUDS-1)
 					{
 						currentBaud++;
 					}
-					else if(currentBaud == MAX_BAUDS)
+					else if(currentBaud == MAX_BAUDS-1)
 					{
 						outOfBauds = true;
 					}
@@ -207,9 +209,10 @@ namespace PiFly
 			}
 		}
 
-		void SkyTraqBinaryProtocol::updateBaudrate(SerialPort::Baudrate baud)
+		void SkyTraqBinaryProtocol::updateBaudrate(const SerialPort::Baudrate baud)
 		{
-			SerialArray<4> command;
+			const uint16_t payloadSize = 4;
+			SerialArray<payloadSize> command;
 			uint8_t gpsBaud;
 			switch(baud)
 			{
@@ -235,6 +238,7 @@ namespace PiFly
 				gpsBaud = 6;
 				break;
 			default:
+				std::cout << "updateBaudrate Input baud: " << baud << "\n";
 				stringstream ss;
 				ss << "Unsupported baudrate ";
 				ss << SerialPort::baudrateString(baud);
@@ -246,7 +250,7 @@ namespace PiFly
 			command[2] = gpsBaud;
 			command[3] = 0; // Update to SRAM
 
-			sendCommand<4>(command);
+			sendCommand<payloadSize>(command);
 
 			try
 			{
@@ -260,13 +264,12 @@ namespace PiFly
 					mSerialPort.flush();
 				}
 			}
-			catch(GpsFormatException& ex)
+			catch(...)
 			{
 				// try one more time to make sure the baudrate took. Sometimes the first receive fails even if it worked.
 				mSerialPort.setBaudrate(baud);
-				mSerialPort.flush();
 
-				sendCommand<4>(command);
+				sendCommand<payloadSize>(command);
 				if(!receiveAckNack())
 				{
 					throw GpsNackException("Received NACK on Config Serial Port command");
@@ -294,66 +297,81 @@ namespace PiFly
 
 		bool SkyTraqBinaryProtocol::receiveAckNack()
 		{
-			SerialBuffer respBuffer(9);
-			size_t bytesToRead = 9;
+			const size_t bytesToRead = 9;
+			SerialArray<bytesToRead> respBuffer;
 			size_t bytesRead = 0;
+			bool haveMessageStart = false;
+
+			using namespace std::chrono;
+			auto startTime = steady_clock::now();
+			duration<double> elapsed;
 			do
 			{
-				bytesRead += mSerialPort.read(respBuffer.begin() + bytesRead, bytesToRead - bytesRead);
-			} while(bytesRead < bytesToRead);
-
-			if(respBuffer.size() != 9)
-			{
-				stringstream ss;
-				ss << "Incorrect response length from GPS. Got ";
-				ss << respBuffer.size();
-				ss << " expected 9. Response = {";
-				for(uint32_t i = 0; i < respBuffer.size(); i++)
+				elapsed = duration_cast<duration<double>>(steady_clock::now() - startTime);
+				uint8_t startMsgByte;
+				bytesRead = mSerialPort.read<1>(&startMsgByte);
+				if(startMsgByte != MSG_START_1)
 				{
-					ss << std::hex << static_cast<uint32_t>(respBuffer[i]) << ", ";
+					continue;
 				}
-				ss << "}";
-				throw GpsFormatException(ss.str());
-			}
 
-			if((respBuffer[0] != MSG_START_1) && (respBuffer[1] != MSG_START_2))
-			{
-				stringstream ss;
-				ss << "Incorrectly formated response from GPS. Response = {" << std::hex << static_cast<uint32_t>(respBuffer[0]);
-				for(uint32_t i = 1; i < respBuffer.size(); i++)
+				respBuffer[0] = startMsgByte;
+				bytesRead += mSerialPort.read<1>(&startMsgByte);
+				if(startMsgByte != MSG_START_2)
 				{
-					ss << ", " << std::hex << static_cast<uint32_t>(respBuffer[i]);
+					continue;
 				}
-				ss << "}";
-				throw GpsFormatException(ss.str());
-			}
-			
-			uint16_t payloadLength = (respBuffer[2] << 8) & 0xFF00;
-			payloadLength |= (respBuffer[3] & 0x00FF);
+				respBuffer[1] = startMsgByte;
+				haveMessageStart = true;
+			} while(!haveMessageStart && (elapsed.count() < ackNackReceiveTimeout));
 
-			if(payloadLength != 2)
+			if(elapsed.count() >= ackNackReceiveTimeout)
 			{
-				throw GpsFormatException("Incorrect payload length for ACK or NACK message");
+				throw Comm::CommTimeoutException("Timeout receiving ack/nack from GPS");
 			}
 
-			uint8_t checksum = computeChecksum(payloadLength, respBuffer);
-			if(checksum != respBuffer[6])
+			do
 			{
-				throw GpsFormatException("Incorrect checksum on response message");
+				bytesRead += mSerialPort.read<bytesToRead>(respBuffer.begin() + bytesRead, cmdByteIdx - bytesRead);
+			} while(bytesRead < cmdByteIdx);
+
+			uint16_t payloadSize = (respBuffer[2] << 8) | respBuffer[3];
+
+			if((payloadSize + overheadSize) > bytesToRead)
+			{
+				throw GpsFormatException("incoming message to large.");
 			}
 
-			Command commandByte = static_cast<Command>(respBuffer[4]);
-			if(Command_ACK == commandByte)
+			do
 			{
-				return true;
-			}
-			else if(Command_NACK == commandByte)
+				bytesRead += mSerialPort.read<bytesToRead>(respBuffer.begin() + bytesRead, (payloadSize + overheadSize) - bytesRead);
+			} while(bytesRead < (payloadSize + overheadSize));
+
+			if((*(respBuffer.begin() + bytesRead - 1) == MSG_END_2) && (*(respBuffer.begin() + bytesRead - 2) == MSG_END_1))
 			{
-				return false;
+				uint8_t checksum = computeChecksum(payloadSize, respBuffer);
+				if(checksum != respBuffer[6])
+				{
+					throw GpsFormatException("Incorrect checksum on response message");
+				}
+
+				Command commandByte = static_cast<Command>(respBuffer[4]);
+				if(Command_ACK == commandByte)
+				{
+					return true;
+				}
+				else if(Command_NACK == commandByte)
+				{
+					return false;
+				}
+				else
+				{
+					throw GpsFormatException("Unexpected response message");
+				}
 			}
 			else
 			{
-				throw GpsFormatException("Unexpected response message");
+				throw GpsFormatException("Message missing terminating bytes.");
 			}
 		}
 
