@@ -12,7 +12,6 @@ function check_yn()
 	fi
 }
 
-
 function get_install_dir()
 {
 	installDir=${HOME}/raspberrypi
@@ -85,6 +84,22 @@ function clone_kernel()
 	check_yn
 	
 	git clone --depth=1 https://github.com/raspberrypi/linux.git
+}
+
+function get_boost()
+{
+	if [ -z $downloadDir ]; then
+		exit 1
+	fi
+	if [ -z $rootfsDir ]; then
+		exit 1
+	fi
+	cd $downloadDir
+
+	curl -o boost_1_63_0.tar.bz2 https://superb-sea2.dl.sourceforge.net/project/boost/boost/1.63.0/boost_1_63_0.tar.bz2
+	tar xf boost_1_63_0.tar.bz2
+	cd boost_1_63_0
+	./bootstrap.sh
 }
 
 function install_kernel_headers()

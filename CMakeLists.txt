@@ -12,8 +12,8 @@ set(${PROJECT_NAME}_INCLUDE_DIRS include
 								 CACHE INTERNAL "${PROJECT_NAME}: Include Directories" FORCE)
 
 set(${PROJECT_NAME}_LINK_LIBS pthread
-							  bcm2835
-							  libpifly 
+							  libpifly
+							  bcm2835 
 							  CACHE INTERNAL "${PROJECT_NAME}: Link libs" FORCE)
 
 include_directories(${${PROJECT_NAME}_INCLUDE_DIRS})
