@@ -43,11 +43,15 @@ int main(int argc, char** argv)
 		ResultVector sampleBuff(sampleBuffSize);
 		while(!interrupted.load())
 		{
-			gps.getLatestSamples(sampleBuff);
+			size_t samples = gps.getLatestSamples(sampleBuff);
 
-			for(uint32_t i = 0; i < sampleBuff.size(); i++)
+			for(uint32_t i = 0; i < samples; i++)
 			{
-				std::cout << "FixType: " << sampleBuff[i].fixType << " Satellites in view: " << static_cast<uint32_t>(sampleBuff[i].satellitesInView) << " mean sea level: " << sampleBuff[i].meanSeaLevel << " lat: " << sampleBuff[i].latitude << " long: " << sampleBuff[i].longitude << "\n";
+				std::cout << "FixType: " << sampleBuff[i].fixType <<
+							 " Satellites in view: " << static_cast<uint32_t>(sampleBuff[i].satellitesInView) <<
+							 " mean sea level: " << sampleBuff[i].meanSeaLevel <<
+							 " lat: " << sampleBuff[i].latitude <<
+							 " long: " << sampleBuff[i].longitude << "\n";
 			}
 		}
 

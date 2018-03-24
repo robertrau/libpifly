@@ -15,7 +15,7 @@ function check_yn()
 function get_install_dir()
 {
 	installDir=${HOME}/raspberrypi
-	echo -n "Install toolchain and rootfs to [$installDir]: "
+	echo -n "To install the toolchain and rootfs to the default path [$installDir] hit enter, otherwise, enter a new path here: "
 	read ans
 
 	if [ "$ans" != "" ]; then

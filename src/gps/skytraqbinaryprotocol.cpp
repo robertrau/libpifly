@@ -123,7 +123,7 @@ namespace PiFly
 					mGpsResult.longitude = extract<int32_t, updateBufferSize>(buffer, offset);
 
 					// skip ellipsiod altitude
-					extract<uint32_t, updateBufferSize>(buffer, offset);
+					(void)extract<uint32_t, updateBufferSize>(buffer, offset);
 
 					mGpsResult.meanSeaLevel = extract<uint32_t, updateBufferSize>(buffer, offset);
 

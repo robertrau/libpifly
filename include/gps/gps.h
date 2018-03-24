@@ -34,7 +34,7 @@ namespace PiFly
 
 			void start();
 			void stop();
-			void getLatestSamples(ResultVector& resultVector);
+			size_t getLatestSamples(ResultVector& resultVector);
 
 		private:
 
@@ -45,7 +45,6 @@ namespace PiFly
 			std::condition_variable mNotify;
 			const size_t mResultBufferSize = 512;
 			ResultVector mResultBuffer;
-			bool mResultReady;
 		};
 	}
 }

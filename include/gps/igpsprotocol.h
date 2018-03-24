@@ -16,6 +16,7 @@ namespace PiFly
 			FixType_3D = 3,
 			FixType_3DDGNSS = 4,
 		} FixType;
+		
 		struct GpsResult
 		{
 			FixType fixType;
