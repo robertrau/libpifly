@@ -5,7 +5,7 @@ project(libpifly)
 # Need to write a find module for this
 #find_package(bcm2835 REQUIRED)
 
-file(GLOB SOURCES "src/*/*.cpp")
+file(GLOB SOURCES "src/*/*.cpp" "src/*/*/*.cpp")
 
 set(${PROJECT_NAME}_INCLUDE_DIRS include 
 								 ${CMAKE_SYSROOT}/usr/local/include

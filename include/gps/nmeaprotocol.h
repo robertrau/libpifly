@@ -13,7 +13,9 @@ namespace PiFly
 	namespace GPS
 	{
 		using Comm::SerialPort;
-		
+		using Comm::SerialArray;
+		using Comm::SerialBuffer;
+
 		class NMEAProtocol : public IGpsProtocol
 		{
 		public:

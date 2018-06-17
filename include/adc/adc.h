@@ -7,21 +7,31 @@
 
 #include <string>
 
+#include "comm/spi/serialperipheralinterface.h"
+
 using std::string;
 
 namespace PiFly
 {
 	namespace ADC
 	{
-		void Init(void);
+		class Channel
+		{
+			uint32_t getLatestSample();
+		};
 
 		class AnalogDigitalConverter
 		{
 		public:
-			AnalogDigitalConverter();
+			AnalogDigitalConverter(Comm::SPI::ChannelPtr channel);
+			~AnalogDigitalConverter();
+			void update();
+
+			Channel& getChannel(uint32_t channel);
+		private:
+			Comm::SPI::ChannelPtr mChannel;
 		};
 	}
 }
 
 #endif // LIBPIFLY_ADC_ADC_H
-

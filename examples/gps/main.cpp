@@ -9,12 +9,17 @@
 
 #include "gps/gps.h"
 #include "gps/gpsexception.h"
-#include "gps/skytraqbinaryprotocol.h"
+#include "gps/nmeaprotocol.h"
+#include "gps/skytraq/skytraqbinaryprotocol.h"
+#include "gps/skytraq/skytraqvenus.h"
 #include "comm/commexception.h"
 
 using PiFly::GPS::GlobalPositioningSystem;
-using PiFly::GPS::SkyTraqBinaryProtocol;
+using PiFly::GPS::NMEAProtocol;
+using PiFly::GPS::Skytraq::SkyTraqBinaryProtocol;
+using PiFly::GPS::Skytraq::SkyTraqVenus;
 using PiFly::GPS::ResultVector;
+using PiFly::GPS::GpsResult;
 using PiFly::GPS::GpsException;
 using PiFly::Comm::SerialPort;
 using PiFly::Comm::CommException;
@@ -26,36 +31,38 @@ void term_handle(int sig)
 	interrupted.store(true);
 }
 
+template <class Gps>
+void run_loop(Gps& gps)
+{
+	while(!interrupted.load())
+	{
+		GpsResult result;
+
+		if(gps.getResult(result))
+		{
+			std::cout << "FixType: " << result.fixType <<
+							" Satellites in view: " << static_cast<uint32_t>(result.satellitesInView) <<
+							" GNSS Week: " << result.GNSSWeek <<
+							" TOW: " << result.tow <<
+							" mean sea level: " << result.meanSeaLevel <<
+							" lat: " << result.latitude <<
+							" long: " << result.longitude << "\n";
+		}
+	}
+}
+
 int main(int argc, char** argv)
 {
 	signal(SIGINT, &term_handle);
 
 	try
-	{
-		SerialPort serialPort("/dev/serial0", SerialPort::Baudrate_230400);
-		SkyTraqBinaryProtocol protocol(serialPort);
-		GlobalPositioningSystem gps(protocol);
+	{		
+		SerialPort serialPort("/dev/serial0", SerialPort::Baudrate_230400, false);
+		SkyTraqVenus skytraqVenus(serialPort, 2.0);
+		SkyTraqBinaryProtocol protocol(serialPort, skytraqVenus);
 
 		std::cout << "Starting gps" << std::endl;
-		gps.start();
-
-		const size_t sampleBuffSize = 512;
-		ResultVector sampleBuff(sampleBuffSize);
-		while(!interrupted.load())
-		{
-			size_t samples = gps.getLatestSamples(sampleBuff);
-
-			for(uint32_t i = 0; i < samples; i++)
-			{
-				std::cout << "FixType: " << sampleBuff[i].fixType <<
-							 " Satellites in view: " << static_cast<uint32_t>(sampleBuff[i].satellitesInView) <<
-							 " mean sea level: " << sampleBuff[i].meanSeaLevel <<
-							 " lat: " << sampleBuff[i].latitude <<
-							 " long: " << sampleBuff[i].longitude << "\n";
-			}
-		}
-
-		gps.stop();
+		run_loop(protocol);
 	}
 	catch(GpsException& ex)
 	{

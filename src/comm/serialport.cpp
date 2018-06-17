@@ -13,9 +13,18 @@ namespace PiFly
 {
 	namespace Comm
 	{
-		SerialPort::SerialPort(string devPath, Baudrate baud)
+		SerialPort::SerialPort(string devPath, Baudrate baud, bool blocking) :
+			mBlocking(blocking)
 		{
-			serialFd = open(devPath.c_str(), O_RDWR);
+			if(mBlocking)
+			{
+				serialFd = open(devPath.c_str(), O_RDWR);
+			}
+			else
+			{
+				serialFd = open(devPath.c_str(), O_RDWR | O_NONBLOCK | O_NDELAY);
+			}
+
 			if(serialFd < 0)
 			{
 				throw CommFdException(errno);
@@ -50,19 +59,39 @@ namespace PiFly
 
 		size_t SerialPort::read(SerialBuffer::iterator first, size_t readBytes)
 		{
-			int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
-			
-			if(resp > 0)
+			if(!mBlocking)
 			{
-				return resp;
-			}
-			else if(resp == 0)
-			{
-				throw CommFdException(errno);
+				int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
+				
+				if(resp > 0)
+				{
+					return resp;
+				}
+				else if((resp < 0) && (errno != EAGAIN))
+				{
+					throw CommFdException(errno);
+				}
+				else
+				{
+					return 0;
+				}
 			}
 			else
 			{
-				throw CommFdException(resp);
+				int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
+				
+				if(resp > 0)
+				{
+					return resp;
+				}
+				else if(resp == 0)
+				{
+					throw CommFdException(errno);
+				}
+				else
+				{
+					throw CommFdException(resp);
+				}
 			}
 		}
 
@@ -90,8 +119,15 @@ namespace PiFly
 
 		void SerialPort::setBaudrate(Baudrate baud)
 		{
-			int resp = cfsetispeed(&serialTTY, linuxBaudrateMap(baud));
-			resp = cfsetospeed(&serialTTY, linuxBaudrateMap(baud));
+			if(cfsetispeed(&serialTTY, linuxBaudrateMap(baud)) != 0)
+			{
+				throw CommFdException(errno);
+			}
+
+			if(cfsetospeed(&serialTTY, linuxBaudrateMap(baud)) != 0)
+			{
+				throw CommFdException(errno);
+			}
 
 			if(tcsetattr(serialFd, TCSANOW, &serialTTY) != 0)
 			{

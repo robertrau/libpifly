@@ -21,6 +21,7 @@
 #include <unistd.h>
 
 #include "comm/commexception.h"
+#include "comm/comm.h"
 
 namespace PiFly
 {
@@ -34,9 +35,6 @@ namespace PiFly
 		class SerialPort
 		{
 		public:
-			typedef vector<uint8_t> SerialBuffer;
-			template<size_t size>
-			using SerialArray = array<uint8_t, size>;
 
 			typedef enum
 			{
@@ -61,44 +59,45 @@ namespace PiFly
 				Baudrate_230400
 			} Baudrate;
 
-			SerialPort(string devPath, Baudrate baud);
+			SerialPort(string devPath, Baudrate baud, bool blocking = true);
 			virtual ~SerialPort();
 
 			template<size_t size>
-			size_t read(typename SerialArray<size>::iterator first)
+			size_t read(typename SerialArray<size>::iterator first, size_t readBytes = size)
 			{
-				int resp = ::read(serialFd, static_cast<void*>(&(*first)), size);
-				
-				if(resp > 0)
+				if(!mBlocking)
 				{
-					return resp;
-				}
-				else if(resp == 0)
-				{
-					throw CommFdException(errno);
+					int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
+					
+					if(resp > 0)
+					{
+						return resp;
+					}
+					else if((resp < 0) && (errno != EAGAIN))
+					{
+						throw CommFdException(errno);
+					}
+					else
+					{
+						return 0;
+					}
 				}
 				else
 				{
-					throw CommFdException(resp);
-				}
-			}
-
-			template<size_t size>
-			size_t read(typename SerialArray<size>::iterator first, size_t readBytes)
-			{
-				int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
-				
-				if(resp > 0)
-				{
-					return resp;
-				}
-				else if(resp == 0)
-				{
-					throw CommFdException(errno);
-				}
-				else
-				{
-					throw CommFdException(resp);
+					int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
+					
+					if(resp > 0)
+					{
+						return resp;
+					}
+					else if(resp == 0)
+					{
+						throw CommFdException(errno);
+					}
+					else
+					{
+						throw CommFdException(resp);
+					}
 				}
 			}
 
@@ -141,6 +140,8 @@ namespace PiFly
 
 			static speed_t linuxBaudrateMap(Baudrate baud);
 			static Baudrate linuxBaudrateMap(speed_t baud);
+
+			bool mBlocking;
 		};
 	}
 }

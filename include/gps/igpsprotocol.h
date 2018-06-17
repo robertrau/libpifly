@@ -21,6 +21,8 @@ namespace PiFly
 		{
 			FixType fixType;
 			uint8_t satellitesInView;
+			uint16_t GNSSWeek;
+			uint32_t tow;
 			uint32_t meanSeaLevel;
 			int32_t latitude;
 			int32_t longitude;
