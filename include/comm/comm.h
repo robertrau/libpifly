@@ -8,10 +8,8 @@
 #include <array>
 #include <vector>
 
-namespace PiFly
-{
-	namespace Comm
-	{
+namespace PiFly {
+	namespace Comm {
 		typedef std::vector<uint8_t> SerialBuffer;
 		template<size_t size>
 		using SerialArray = std::array<uint8_t, size>;

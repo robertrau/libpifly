@@ -5,20 +5,16 @@
 #ifndef LIBPIFLY_GPS_IGPSPROTOCOL_H
 #define LIBPIFLY_GPS_IGPSPROTOCOL_H
 
-namespace PiFly
-{
-	namespace GPS
-	{
-		typedef enum
-		{
+namespace PiFly {
+	namespace GPS {
+		typedef enum {
 			FixType_NoFix = 1,
 			FixType_2D = 2,
 			FixType_3D = 3,
 			FixType_3DDGNSS = 4,
 		} FixType;
 		
-		struct GpsResult
-		{
+		struct GpsResult {
 			FixType fixType;
 			uint8_t satellitesInView;
 			uint16_t GNSSWeek;
@@ -33,12 +29,9 @@ namespace PiFly
 			uint16_t tdop;
 		};
 
-		class IGpsProtocol
-		{
+		class IGpsProtocol {
 		public:
-			virtual const bool haveResult() const = 0;
-			virtual void update() = 0;
-			virtual GpsResult getResult() = 0;
+			virtual bool getResult(GpsResult& result) = 0;
 		};
 	}
 }

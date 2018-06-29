@@ -8,21 +8,16 @@
 #include <chrono>
 
 #include "comm/serialport.h"
-#include "gps/gps.h"
 #include "gps/igpsprotocol.h"
 
-namespace PiFly
-{
-	namespace GPS
-	{
-		namespace Skytraq
-		{
+namespace PiFly {
+	namespace GPS {
+		namespace Skytraq {
 			using Comm::SerialPort;
 			using Comm::SerialArray;
 			using Comm::SerialBuffer;
 			
-			class SkyTraqVenus
-			{
+			class SkyTraqVenus {
 			public:	
 				SkyTraqVenus(SerialPort& serialPort, double timeout = 0.5);
 
@@ -32,8 +27,7 @@ namespace PiFly
 				const static uint8_t MSG_START_2 = 0xA1;
 				const static uint8_t MSG_END_1 = 0x0D;
 				const static uint8_t MSG_END_2 = 0x0A;
-				typedef enum
-				{
+				typedef enum {
 					Command_ConfigSerial = 0x5,
 					Command_ConfigNMEA = 0x8,
 					Command_MessageType = 0x9,
@@ -47,17 +41,14 @@ namespace PiFly
 				static uint8_t computeChecksum(uint16_t payloadLength, SerialBuffer& commandBuffer);
 
 				template<size_t size>
-				static uint8_t computeChecksum(uint16_t payloadLength, SerialArray<size>& buffer)
-				{
+				static uint8_t computeChecksum(uint16_t payloadLength, SerialArray<size>& buffer) {
 					uint8_t checksum = 0;
 
-					if(buffer.size() < (payloadLength + overheadSize))
-					{
+					if(buffer.size() < (payloadLength + overheadSize)) {
 						throw GpsException("command buffer is too small");
 					}
 
-					for(uint32_t i = 4; i < (payloadLength + 4); i++)
-					{
+					for(uint32_t i = 4; i < (payloadLength + 4); i++) {
 						checksum = checksum ^ buffer[i];
 					}
 					return checksum;
@@ -66,8 +57,7 @@ namespace PiFly
 				void updateBaudrate(const SerialPort::Baudrate baud);
 				void setPositionUpdateRate(uint8_t positionRate);
 
-				typedef enum
-				{
+				typedef enum {
 					MessageType_None,
 					MessageType_NMEA,
 					MessageType_Binary
@@ -75,8 +65,7 @@ namespace PiFly
 				void setMessageType(MessageType messageType);
 
 				template<size_t size>
-				void sendCommand(const SerialArray<size>& command)
-				{
+				void sendCommand(const SerialArray<size>& command) {
 					const size_t payloadLength = size;
 					const size_t messageSize = size + 7;
 					SerialArray<messageSize> buffer;
@@ -95,11 +84,10 @@ namespace PiFly
 				void autoNegotiateBaudrate();
 
 			private:
+				SerialPort& mSerialPort;
 				std::chrono::duration<double> ackNackReceiveTimeout;
 
 				bool receiveAckNack();
-
-				SerialPort& mSerialPort;
 			};
 		}
 	}

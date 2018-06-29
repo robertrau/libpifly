@@ -8,12 +8,10 @@
 
 #include "comm/spi/channel.h"
 
-namespace PiFly
-{
-	namespace Comm
-	{
-		namespace SPI
-		{
+namespace PiFly {
+	namespace Comm {
+		namespace SPI {
+
 			Channel::Channel(ChipSelect cs, Mode mode, BitOrder bitOrder, ClockDivider clockDivider, ChipSelectPolarity polarity) :
 				mCs(cs),
 				mMode(mode),
@@ -24,11 +22,9 @@ namespace PiFly
 				
 			}
 
-			bool Channel::start()
-			{
+			bool Channel::start() {
 				auto ret = bcm2835_spi_begin();
-				if(ret != 1)
-				{
+				if(ret != 1) {
 					std::cout << "Failed to begin spi operation" << std::endl;
 					return false;
 				}
@@ -45,20 +41,19 @@ namespace PiFly
 				return true;
 			}
 
-			void Channel::end()
-			{
+			void Channel::end() {
 				bcm2835_spi_end();
 			}
 
-			bool Channel::transfer(SerialBuffer write, SerialBuffer read)
-			{
-				if(!start())
-				{
+			bool Channel::transfer(SerialBuffer write, SerialBuffer read) {
+				if(!start()) {
 					return false;
 				}
 
 				uint32_t transferLen = write.size() >= read.size() ? read.size() : write.size();
 				// Really wish this cast wasn't necessary :(
+				// but because libbcm2835 uses char* for data
+				// and not void* we have to do this cast :/
 				char* txPtr = reinterpret_cast<char*>(write.data());
 				char* rxPtr = reinterpret_cast<char*>(read.data());
 				bcm2835_spi_transfernb(txPtr, rxPtr, transferLen);
@@ -68,13 +63,14 @@ namespace PiFly
 				return true;
 			}
 
-			bool Channel::transfer(SerialBuffer readWrite)
-			{
-				if(!start())
-				{
+			bool Channel::transfer(SerialBuffer readWrite) {
+				if(!start()) {
 					return false;
 				}
 
+				// Really wish this cast wasn't necessary :(
+				// but because libbcm2835 uses char* for data
+				// and not void* we have to do this cast :/
 				char* bufPtr = reinterpret_cast<char*>(readWrite.data());
 				bcm2835_spi_transfern(bufPtr, readWrite.size());
 

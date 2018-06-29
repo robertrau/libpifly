@@ -11,16 +11,13 @@
 
 #include <string.h>
 
-namespace PiFly
-{
-	namespace Comm
-	{
+namespace PiFly {
+	namespace Comm {
 		using std::string;
 		using std::exception;
 		using std::stringstream;
 
-		class CommException : public exception
-		{
+		class CommException : public exception {
 		public:
 			CommException() {}
 			CommException(string msg) :
@@ -29,8 +26,7 @@ namespace PiFly
 
 			}
 
-			virtual const char* what() const noexcept
-			{
+			virtual const char* what() const noexcept {
 				return mMessage.c_str();
 			}
 
@@ -38,8 +34,7 @@ namespace PiFly
 			string mMessage;
 		};
 
-		class CommFdException : public CommException
-		{
+		class CommFdException : public CommException {
 		public:
 			CommFdException(int _err, string file=__FILE__, int line=__LINE__) : 
 				err(_err)
@@ -47,8 +42,7 @@ namespace PiFly
 
 			}
 
-			virtual const char* what() const noexcept
-			{
+			virtual const char* what() const noexcept {
 				stringstream ss;
 				ss << "Communication file descriptor error. errno = ";
 				ss << err;
@@ -61,8 +55,7 @@ namespace PiFly
 			int err;
 		};
 
-		class CommTimeoutException : public CommException
-		{
+		class CommTimeoutException : public CommException {
 		public:
 			CommTimeoutException(string msg) : CommException(msg) {}
 		};

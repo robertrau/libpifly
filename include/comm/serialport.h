@@ -23,21 +23,18 @@
 #include "comm/commexception.h"
 #include "comm/comm.h"
 
-namespace PiFly
-{
-	namespace Comm
-	{
+namespace PiFly {
+	namespace Comm {
+
 		using std::array;
 		using std::string;
 		using std::vector;
 		using std::stringstream;
 
-		class SerialPort
-		{
+		class SerialPort {
 		public:
 
-			typedef enum
-			{
+			typedef enum {
 				Baudrate_0,
 				Baudrate_50,
 				Baudrate_75,
@@ -63,39 +60,25 @@ namespace PiFly
 			virtual ~SerialPort();
 
 			template<size_t size>
-			size_t read(typename SerialArray<size>::iterator first, size_t readBytes = size)
-			{
-				if(!mBlocking)
-				{
+			size_t read(typename SerialArray<size>::iterator first, size_t readBytes = size) {
+				if(!mBlocking) {
 					int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
 					
-					if(resp > 0)
-					{
+					if(resp > 0) {
 						return resp;
-					}
-					else if((resp < 0) && (errno != EAGAIN))
-					{
+					} else if((resp < 0) && (errno != EAGAIN)) {
 						throw CommFdException(errno);
-					}
-					else
-					{
+					} else {
 						return 0;
 					}
-				}
-				else
-				{
+				} else {
 					int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
 					
-					if(resp > 0)
-					{
+					if(resp > 0) {
 						return resp;
-					}
-					else if(resp == 0)
-					{
+					} else if(resp == 0) {
 						throw CommFdException(errno);
-					}
-					else
-					{
+					} else {
 						throw CommFdException(resp);
 					}
 				}
@@ -104,23 +87,16 @@ namespace PiFly
 			size_t read(SerialBuffer::iterator first, size_t readBytes);
 
 			template <size_t size>
-			void write(const SerialArray<size>& buffer)
-			{
+			void write(const SerialArray<size>& buffer) {
 				size_t bytesWritten = 0;
 				ssize_t resp;
-				do
-				{
+				do {
 					resp = ::write(serialFd, static_cast<const void*>(buffer.data()), size);
-					if(resp > 0)
-					{
+					if(resp > 0) {
 						bytesWritten += resp;
-					}
-					else if(resp == 0)
-					{
+					} else if(resp == 0) {
 						throw CommFdException(errno);
-					}
-					else
-					{
+					} else {
 						throw CommFdException(resp);
 					}
 				} while(bytesWritten < buffer.size());

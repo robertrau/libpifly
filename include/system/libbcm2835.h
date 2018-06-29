@@ -10,12 +10,9 @@
 
 #include <bcm2835.h>
 
-namespace PiFly
-{
-	namespace System
-	{
-		class Libbcm2835
-		{
+namespace PiFly {
+	namespace System {
+		class Libbcm2835 {
 		public:
 			static bool Init();
 			static bool Close();

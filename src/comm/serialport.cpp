@@ -16,140 +16,108 @@ namespace PiFly
 		SerialPort::SerialPort(string devPath, Baudrate baud, bool blocking) :
 			mBlocking(blocking)
 		{
-			if(mBlocking)
-			{
+			if(mBlocking) {
 				serialFd = open(devPath.c_str(), O_RDWR);
-			}
-			else
-			{
+			} else {
 				serialFd = open(devPath.c_str(), O_RDWR | O_NONBLOCK | O_NDELAY);
 			}
 
-			if(serialFd < 0)
-			{
+			if(serialFd < 0) {
 				throw CommFdException(errno);
 			}
 
 			memset(&serialTTY, 0, sizeof(termios));
 
-			if(tcgetattr(serialFd, &serialTTY) != 0)
-			{
+			if(tcgetattr(serialFd, &serialTTY) != 0) {
 				throw CommFdException(errno);
 			}
 
-			int resp = cfsetispeed(&serialTTY, linuxBaudrateMap(baud));
-			resp = cfsetospeed(&serialTTY, linuxBaudrateMap(baud));
-
+			if(cfsetispeed(&serialTTY, linuxBaudrateMap(baud)) != 0) {
+				throw CommFdException(errno);
+			}
+			
+			if(cfsetospeed(&serialTTY, linuxBaudrateMap(baud)) != 0) {
+				throw CommFdException(errno);
+			}
+			
 			// make a raw serial port
 			cfmakeraw(&serialTTY);
 
-			if(tcsetattr(serialFd, TCSANOW, &serialTTY) != 0)
-			{
+			if(tcsetattr(serialFd, TCSANOW, &serialTTY) != 0) {
 				throw CommFdException(errno);
 			}
 		}
 
-		SerialPort::~SerialPort()
-		{
-			if(serialFd >= 0)
-			{
+		SerialPort::~SerialPort() {
+			if(serialFd >= 0) {
 				close(serialFd);
 			}
 		}
 
-		size_t SerialPort::read(SerialBuffer::iterator first, size_t readBytes)
-		{
-			if(!mBlocking)
-			{
+		size_t SerialPort::read(SerialBuffer::iterator first, size_t readBytes) {
+			if(!mBlocking) {
 				int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
 				
-				if(resp > 0)
-				{
+				if(resp > 0) {
 					return resp;
-				}
-				else if((resp < 0) && (errno != EAGAIN))
-				{
+				} else if((resp < 0) && (errno != EAGAIN)) {
 					throw CommFdException(errno);
-				}
-				else
-				{
+				} else {
 					return 0;
 				}
-			}
-			else
-			{
+			} else {
 				int resp = ::read(serialFd, static_cast<void*>(&(*first)), readBytes);
 				
-				if(resp > 0)
-				{
+				if(resp > 0) {
 					return resp;
-				}
-				else if(resp == 0)
-				{
+				} else if(resp == 0) {
 					throw CommFdException(errno);
-				}
-				else
-				{
+				} else {
 					throw CommFdException(resp);
 				}
 			}
 		}
 
-		void SerialPort::write(const SerialBuffer& buffer)
-		{
+		void SerialPort::write(const SerialBuffer& buffer) {
 			size_t bytesWritten = 0;
 			ssize_t resp;
-			do
-			{
+			do {
 				resp = ::write(serialFd, static_cast<const void*>(buffer.data()), buffer.size());
-				if(resp > 0)
-				{
+				if(resp > 0) {
 					bytesWritten += resp;
-				}
-				else if(resp == 0)
-				{
+				} else if(resp == 0) {
 					throw CommFdException(errno);
-				}
-				else
-				{
+				} else {
 					throw CommFdException(resp);
 				}
 			} while(bytesWritten < buffer.size());
 		}
 
-		void SerialPort::setBaudrate(Baudrate baud)
-		{
-			if(cfsetispeed(&serialTTY, linuxBaudrateMap(baud)) != 0)
-			{
+		void SerialPort::setBaudrate(Baudrate baud) {
+			if(cfsetispeed(&serialTTY, linuxBaudrateMap(baud)) != 0) {
 				throw CommFdException(errno);
 			}
 
-			if(cfsetospeed(&serialTTY, linuxBaudrateMap(baud)) != 0)
-			{
+			if(cfsetospeed(&serialTTY, linuxBaudrateMap(baud)) != 0) {
 				throw CommFdException(errno);
 			}
 
-			if(tcsetattr(serialFd, TCSANOW, &serialTTY) != 0)
-			{
+			if(tcsetattr(serialFd, TCSANOW, &serialTTY) != 0) {
 				throw CommFdException(errno);
 			}
 		}
 
-		SerialPort::Baudrate SerialPort::getBaudrate()
-		{
+		SerialPort::Baudrate SerialPort::getBaudrate() {
 			speed_t currentBaud = cfgetispeed(&serialTTY);
 			return linuxBaudrateMap(currentBaud);
 		}
 
-		void SerialPort::flush()
-		{
+		void SerialPort::flush() {
 			tcflush(serialFd, TCIOFLUSH);
 		}
 
-		SerialPort::Baudrate SerialPort::linuxBaudrateMap(speed_t baud)
-		{
-			switch(baud)
-			{
+		SerialPort::Baudrate SerialPort::linuxBaudrateMap(speed_t baud) {
+			switch(baud) {
 				case B0:
 					return Baudrate_0;
 				case B50:
@@ -194,10 +162,8 @@ namespace PiFly
 			}
 		}
 
-		speed_t SerialPort::linuxBaudrateMap(Baudrate baud)
-		{
-			switch(baud)
-			{
+		speed_t SerialPort::linuxBaudrateMap(Baudrate baud) {
+			switch(baud) {
 				case Baudrate_0:
 					return B0;
 				case Baudrate_50:
@@ -242,10 +208,8 @@ namespace PiFly
 			}
 		}
 
-		string SerialPort::baudrateString(Baudrate baud)
-		{
-			switch(baud)
-			{
+		string SerialPort::baudrateString(Baudrate baud) {
+			switch(baud) {
 				case Baudrate_0:
 					return "0";
 				case Baudrate_50:

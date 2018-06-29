@@ -100,6 +100,10 @@ function get_boost()
 	tar xf boost_1_63_0.tar.bz2
 	cd boost_1_63_0
 	./bootstrap.sh
+
+	#./bootstrap.sh --prefix=~/raspberrypi/rootfs/usr/local --with-python-version=3.4 --with-python-root=~/raspberrypi/rootfs/usr --with-python=/usr/bin/python3.4
+	# modify bjam file
+	#./b2 install toolset=gcc-arm --prefix=~/raspberrypi/rootfs/usr/local 
 }
 
 function install_kernel_headers()

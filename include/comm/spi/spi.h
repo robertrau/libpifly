@@ -7,36 +7,30 @@
 
 #include <bcm2835.h>
 
-namespace PiFly
-{
-	namespace Comm
-	{
-		namespace SPI
-		{
-			typedef enum
-			{
+namespace PiFly {
+	namespace Comm {
+		namespace SPI {
+
+			typedef enum {
 				BitOrder_LsbFirst = BCM2835_SPI_BIT_ORDER_LSBFIRST,
 				BitOrder_MsbFirst = BCM2835_SPI_BIT_ORDER_MSBFIRST
 			} BitOrder;
 
-			typedef enum
-			{
+			typedef enum {
 				Mode_CPOL0_CPHA0 = BCM2835_SPI_MODE0,
 				Mode_CPOL0_CPHA1,
 				Mode_CPOL1_CPHA0,
 				Mode_CPOL1_CPHA1
 			} Mode;
 
-			typedef enum
-			{
+			typedef enum {
 				ChipSelect_0 = BCM2835_SPI_CS0,
 				ChipSelect_1,
 				ChipSelect_2,
 				ChipSelect_None
 			} ChipSelect;
 
-			typedef enum
-			{
+			typedef enum {
 				ClockDivider_65536 = BCM2835_SPI_CLOCK_DIVIDER_65536,
 				ClockDivider_32768 = BCM2835_SPI_CLOCK_DIVIDER_32768,
 				ClockDivider_16384 = BCM2835_SPI_CLOCK_DIVIDER_16384,
@@ -56,8 +50,7 @@ namespace PiFly
 				ClockDivider_1 = BCM2835_SPI_CLOCK_DIVIDER_1
 			} ClockDivider;
 
-			typedef enum
-			{
+			typedef enum {
 				ChipSelectPolarity_ActiveLow,
 				ChipSelectPolarity_ActiveHigh
 			} ChipSelectPolarity;

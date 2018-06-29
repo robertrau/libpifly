@@ -8,22 +8,17 @@
 #include "comm/serialport.h"
 #include "gps/igpsprotocol.h"
 
-namespace PiFly
-{
-	namespace GPS
-	{
+namespace PiFly {
+	namespace GPS {
 		using Comm::SerialPort;
 		using Comm::SerialArray;
 		using Comm::SerialBuffer;
 
-		class NMEAProtocol : public IGpsProtocol
-		{
+		class NMEAProtocol : public IGpsProtocol {
 		public:
 			NMEAProtocol(SerialPort& serialPort);
 
-			virtual const bool haveResult() const;
-			virtual void update();
-			virtual GpsResult getResult();
+			virtual bool getResult(GpsResult& gpsResult);
 
 		private:
 			SerialPort& mSerialPort;

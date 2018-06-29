@@ -18,17 +18,14 @@
 #include "comm/comm.h"
 #include "comm/spi/spi.h"
 
-namespace PiFly
-{
-	namespace Comm
-	{
-		namespace SPI
-		{
+namespace PiFly {
+	namespace Comm {
+		namespace SPI {
+
 			using std::array;
 			using std::vector;
 
-			class Channel
-			{
+			class Channel {
 				friend class SerialPeripheralInterface;
 				friend class ChannelDeleter;
 				Channel(ChipSelect cs, Mode mode, BitOrder bitOrder, ClockDivider clockDivider, ChipSelectPolarity polarity);
@@ -44,18 +41,24 @@ namespace PiFly
 
 			public:
 
+				/** A single SPI transaction with seperate read and write buffers.
+				 *
+				 */
 				bool transfer(SerialBuffer write, SerialBuffer read);
+				/** A single SPI transaction with a single buffer that is written from and read to.
+				 *
+				 */
 				bool transfer(SerialBuffer readWrite);
 
 				template<size_t size>
-				bool transfer(SerialArray<size> write, SerialArray<size> read)
-				{
-					if(!start())
-					{
+				bool transfer(SerialArray<size> write, SerialArray<size> read) {
+					if(!start()) {
 						return false;
 					}
 
 					// Really wish this cast wasn't necessary :(
+					// but because libbcm2835 uses char* for data
+					// and not void* we have to do this cast :/
 					char* txPtr = reinterpret_cast<char*>(write.data());
 					char* rxPtr = reinterpret_cast<char*>(read.data());
 					bcm2835_spi_transfernb(txPtr, rxPtr, size);
@@ -66,13 +69,14 @@ namespace PiFly
 				}
 				
 				template<size_t size>
-				bool transfer(SerialArray<size> readWrite)
-				{
-					if(!start())
-					{
+				bool transfer(SerialArray<size> readWrite) {
+					if(!start()) {
 						return false;
 					}
 
+					// Really wish this cast wasn't necessary :(
+					// but because libbcm2835 uses char* for data
+					// and not void* we have to do this cast :/
 					char* bufPtr = reinterpret_cast<char*>(readWrite.data());
 					bcm2835_spi_transfern(bufPtr, size);
 
