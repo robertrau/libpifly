@@ -9,7 +9,7 @@
 #include <string>
 #include <sstream>
 
-#include <string.h>
+#include <cstring>
 
 namespace PiFly {
 	namespace Comm {
@@ -19,19 +19,19 @@ namespace PiFly {
 
 		class CommException : public exception {
 		public:
-			CommException() {}
+			CommException() = default;
 			CommException(string msg) :
-				mMessage(msg)
+				mMessage(std::move(msg))
 			{
 
 			}
 
-			virtual const char* what() const noexcept {
+			const char* what() const noexcept override {
 				return mMessage.c_str();
 			}
 
 		private:
-			string mMessage;
+			string mMessage {""};
 		};
 
 		class CommFdException : public CommException {
@@ -42,7 +42,7 @@ namespace PiFly {
 
 			}
 
-			virtual const char* what() const noexcept {
+			const char* what() const noexcept override {
 				stringstream ss;
 				ss << "Communication file descriptor error. errno = ";
 				ss << err;

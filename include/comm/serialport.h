@@ -11,9 +11,9 @@
 #include <sstream>
 #include <vector>
 
-#include <string.h>
+#include <cstring>
 
-#include <errno.h>
+#include <cerrno>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -34,7 +34,7 @@ namespace PiFly {
 		class SerialPort {
 		public:
 
-			typedef enum {
+			enum Baudrate {
 				Baudrate_0,
 				Baudrate_50,
 				Baudrate_75,
@@ -54,8 +54,14 @@ namespace PiFly {
 				Baudrate_57600,
 				Baudrate_115200,
 				Baudrate_230400
-			} Baudrate;
+			};
 
+			SerialPort(const SerialPort&) = delete;
+			SerialPort& operator=(const SerialPort&) = delete;
+
+			SerialPort(SerialPort&&) = default;
+			SerialPort& operator=(SerialPort&&) = default;
+			
 			SerialPort(string devPath, Baudrate baud, bool blocking = true);
 			virtual ~SerialPort();
 
@@ -113,11 +119,10 @@ namespace PiFly {
 		private:
 			int serialFd;
 			struct termios serialTTY;
+			bool mBlocking;
 
 			static speed_t linuxBaudrateMap(Baudrate baud);
 			static Baudrate linuxBaudrateMap(speed_t baud);
-
-			bool mBlocking;
 		};
 	}
 }

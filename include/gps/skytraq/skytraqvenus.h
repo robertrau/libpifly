@@ -9,6 +9,7 @@
 
 #include "comm/serialport.h"
 #include "gps/igpsprotocol.h"
+#include "gps/gpsexception.h"
 
 namespace PiFly {
 	namespace GPS {
@@ -27,7 +28,7 @@ namespace PiFly {
 				const static uint8_t MSG_START_2 = 0xA1;
 				const static uint8_t MSG_END_1 = 0x0D;
 				const static uint8_t MSG_END_2 = 0x0A;
-				typedef enum {
+				enum Command {
 					Command_ConfigSerial = 0x5,
 					Command_ConfigNMEA = 0x8,
 					Command_MessageType = 0x9,
@@ -36,7 +37,7 @@ namespace PiFly {
 					Command_ACK = 0x83,
 					Command_NACK = 0x84,
 					Command_NavDataMsg = 0xA8
-				} Command;
+				};
 
 				static uint8_t computeChecksum(uint16_t payloadLength, SerialBuffer& commandBuffer);
 
@@ -57,18 +58,18 @@ namespace PiFly {
 				void updateBaudrate(const SerialPort::Baudrate baud);
 				void setPositionUpdateRate(uint8_t positionRate);
 
-				typedef enum {
+				enum MessageType {
 					MessageType_None,
 					MessageType_NMEA,
 					MessageType_Binary
-				} MessageType;
+				};
 				void setMessageType(MessageType messageType);
 
 				template<size_t size>
 				void sendCommand(const SerialArray<size>& command) {
 					const size_t payloadLength = size;
 					const size_t messageSize = size + 7;
-					SerialArray<messageSize> buffer;
+					SerialArray<messageSize> buffer{};
 					buffer[0] = MSG_START_1;
 					buffer[1] = MSG_START_2;
 					buffer[2] = payloadLength >> 8;

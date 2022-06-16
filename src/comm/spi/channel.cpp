@@ -6,34 +6,43 @@
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
 
+#include <cassert>
+
 #include "comm/spi/channel.h"
+#include "comm/spi/serialperipheralinterface.h"
 
 namespace PiFly {
 	namespace Comm {
 		namespace SPI {
 
-			Channel::Channel(ChipSelect cs, Mode mode, BitOrder bitOrder, ClockDivider clockDivider, ChipSelectPolarity polarity) :
+			Channel::Channel(ChipSelect cs, Mode mode, BitOrder bitOrder, ClockDivider clockDivider, ChipSelectPolarity polarity, SerialPeripheralInterface& spi) :
 				mCs(cs),
 				mMode(mode),
 				mBitOrder(bitOrder),
 				mClockDivider(clockDivider),
-				mPolarity(polarity)
+				mPolarity(polarity),
+				mSpi(spi)
 			{
-				
+
+			}
+
+			Channel::~Channel() {
+				std::cout << "Destroying channel" << std::endl;
+				mSpi.freeAssociatedChannel(mCs);
 			}
 
 			bool Channel::start() {
-				auto ret = bcm2835_spi_begin();
+				/*auto ret = bcm2835_spi_begin();
 				if(ret != 1) {
 					std::cout << "Failed to begin spi operation" << std::endl;
 					return false;
-				}
+				}*/
 
-				std::cout << "Setting spi clock to about 15Mhz" << std::endl;
+				//std::cout << "Setting spi clock to about 15Mhz" << std::endl;
 				bcm2835_spi_setClockDivider(mClockDivider);
 
 				bcm2835_spi_setDataMode(mMode);
-				
+
 				bcm2835_spi_chipSelect(mCs);
 
 				bcm2835_spi_setChipSelectPolarity(mCs, mPolarity);
@@ -42,10 +51,10 @@ namespace PiFly {
 			}
 
 			void Channel::end() {
-				bcm2835_spi_end();
+				//bcm2835_spi_end();
 			}
 
-			bool Channel::transfer(SerialBuffer write, SerialBuffer read) {
+			bool Channel::transfer(SerialBuffer& write, SerialBuffer& read) {
 				if(!start()) {
 					return false;
 				}
@@ -54,8 +63,9 @@ namespace PiFly {
 				// Really wish this cast wasn't necessary :(
 				// but because libbcm2835 uses char* for data
 				// and not void* we have to do this cast :/
-				char* txPtr = reinterpret_cast<char*>(write.data());
-				char* rxPtr = reinterpret_cast<char*>(read.data());
+				// Linting disabled due to this
+				auto txPtr = reinterpret_cast<char*>(write.data()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+				auto rxPtr = reinterpret_cast<char*>(read.data()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 				bcm2835_spi_transfernb(txPtr, rxPtr, transferLen);
 
 				end();
@@ -63,7 +73,7 @@ namespace PiFly {
 				return true;
 			}
 
-			bool Channel::transfer(SerialBuffer readWrite) {
+			bool Channel::transfer(SerialBuffer& readWrite) {
 				if(!start()) {
 					return false;
 				}
@@ -71,7 +81,8 @@ namespace PiFly {
 				// Really wish this cast wasn't necessary :(
 				// but because libbcm2835 uses char* for data
 				// and not void* we have to do this cast :/
-				char* bufPtr = reinterpret_cast<char*>(readWrite.data());
+				// Linting disabled due to this
+				auto bufPtr = reinterpret_cast<char*>(readWrite.data()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 				bcm2835_spi_transfern(bufPtr, readWrite.size());
 
 				end();

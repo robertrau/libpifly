@@ -86,7 +86,7 @@ function clone_kernel()
 	git clone --depth=1 https://github.com/raspberrypi/linux.git
 }
 
-function get_boost()
+function download_boost()
 {
 	if [ -z $downloadDir ]; then
 		exit 1
@@ -94,16 +94,32 @@ function get_boost()
 	if [ -z $rootfsDir ]; then
 		exit 1
 	fi
+	cd $startDir
+
+	sed "s|<placeholder_rootfs>|$rootfsDir|g" ./scripts/project-config.jam.template > ./scripts/project-config.jam
+
 	cd $downloadDir
 
 	curl -o boost_1_63_0.tar.bz2 https://superb-sea2.dl.sourceforge.net/project/boost/boost/1.63.0/boost_1_63_0.tar.bz2
 	tar xf boost_1_63_0.tar.bz2
-	cd boost_1_63_0
-	./bootstrap.sh
+}
 
-	#./bootstrap.sh --prefix=~/raspberrypi/rootfs/usr/local --with-python-version=3.4 --with-python-root=~/raspberrypi/rootfs/usr --with-python=/usr/bin/python3.4
-	# modify bjam file
-	#./b2 install toolset=gcc-arm --prefix=~/raspberrypi/rootfs/usr/local 
+function build_install_boost()
+{
+	if [ -z $downloadDir ]; then
+		exit 1
+	fi
+	if [ -z $rootfsDir ]; then
+		exit 1
+	fi
+
+	cd $downloadDir/boost_1_63_0	
+	
+	./bootstrap.sh --prefix=$rootfsDir/usr/local --with-python-version=3.4 --with-python-root=$rootfsDir/usr --with-python=/usr/bin/python3.4 --without-libraries=context,coroutine,coroutine2,mpi,atomic,chrono,container,date_time,exception,fiber,filesystem,graph,graph_parallel,iostreams,locale,log,math,metaparse,program_options,random,regex,serialization,signals,system,test,thread,timer,type_erasure,wave
+
+	cp $startDir/scripts/project-config.jam ./
+
+	./b2 install --user-config=project-config.jam toolset=gcc-arm --prefix=$rootfsDir/usr/local include=$rootfsDir/usr/include include=$rootfsDir/usr/include/arm-linux-gnueabihf cxxflags=-std=c++11
 }
 
 function install_kernel_headers()
@@ -218,6 +234,8 @@ check_for "unzip"
 check_for "tar"
 check_for "curl"
 check_for "sed"
+check_for "python3.4m"
+check_for "g++"
 
 get_install_dir
 setup_install_fs
@@ -228,5 +246,7 @@ clone_toolchain
 clone_kernel
 install_kernel_headers
 download_bcm2835
+download_boost
 build_install_bcmLib
 build_toolchain_file
+build_install_boost

@@ -3,7 +3,7 @@
 	Copyright (C) 2017 Robert F. Rau II
 */
 #include <array>
-#include <chrono>
+#include <chrono> // NOLINT
 #include <iostream>
 
 #include "comm/commexception.h"
@@ -30,12 +30,8 @@ namespace PiFly {
 			{
 			}
 
-			SkyTraqBinaryProtocol::~SkyTraqBinaryProtocol()
-			{
-			}
-
 			bool SkyTraqBinaryProtocol::getResult(GpsResult& result) {
-				SerialArray<updateBufferSize> buffer;
+				SerialArray<updateBufferSize> buffer{};
 				size_t bytesRead = 0;
 				uint8_t startByte;
 				do {
@@ -83,7 +79,7 @@ namespace PiFly {
 					}
 				}
 
-				SkyTraqVenus::Command cmd = static_cast<SkyTraqVenus::Command>(buffer[SkyTraqVenus::cmdByteIdx]);
+				auto cmd = static_cast<SkyTraqVenus::Command>(buffer[SkyTraqVenus::cmdByteIdx]);
 
 				if(cmd == SkyTraqVenus::Command_NavDataMsg) {
 					size_t offset = SkyTraqVenus::cmdByteIdx + 1;

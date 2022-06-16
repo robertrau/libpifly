@@ -14,12 +14,15 @@ namespace PiFly
 	namespace Comm
 	{
 		SerialPort::SerialPort(string devPath, Baudrate baud, bool blocking) :
+			serialFd(-1),
+			serialTTY(),
 			mBlocking(blocking)
 		{
+			// Disable var-arg linting for these open calls, we have no other interface to use.
 			if(mBlocking) {
-				serialFd = open(devPath.c_str(), O_RDWR);
+				serialFd = ::open(devPath.c_str(), O_RDWR); //NOLINT(cppcoreguidelines-pro-type-vararg)
 			} else {
-				serialFd = open(devPath.c_str(), O_RDWR | O_NONBLOCK | O_NDELAY);
+				serialFd = ::open(devPath.c_str(), O_RDWR | O_NONBLOCK | O_NDELAY); //NOLINT(cppcoreguidelines-pro-type-vararg)
 			}
 
 			if(serialFd < 0) {

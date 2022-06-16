@@ -5,6 +5,7 @@
 #ifndef LIBPIFLY_ADC_ADC_H
 #define LIBPIFLY_ADC_ADC_H
 
+#include <bitset>
 #include <string>
 
 #include "comm/spi/serialperipheralinterface.h"
@@ -19,47 +20,56 @@ namespace PiFly {
 		public:
 			uint16_t value();
 		private:
-			AnalogInput();
+			AnalogInput() = default;
 			friend class AnalogDigitalConverter;
-			uint16_t sample;
+			uint16_t sample{0};
 		};
 
-		typedef enum {
-			ChannelSelect_1 = 0x0001,
-			ChannelSelect_2 = 0x0002,
-			ChannelSelect_3 = 0x0004,
-			ChannelSelect_4 = 0x0008,
-			ChannelSelect_5 = 0x0010,
-			ChannelSelect_6 = 0x0020,
-			ChannelSelect_7 = 0x0040,
-			ChannelSelect_8 = 0x0080,
-			ChannelSelect_9 = 0x0100,
-			ChannelSelect_10 = 0x0200,
-			ChannelSelect_11 = 0x0400,
-			ChannelSelect_12 = 0x0800,
-			ChannelSelect_13 = 0x1000,
-			ChannelSelect_14 = 0x2000,
-			ChannelSelect_15 = 0x4000,
-			ChannelSelect_16 = 0x8000,
-		} ChannelSelect;
+		enum Channel {
+			Channel_0 = 0x0001,
+			Channel_1 = 0x0002,
+			Channel_2 = 0x0004,
+			Channel_3 = 0x0008,
+			Channel_4 = 0x0010,
+			Channel_5 = 0x0020,
+			Channel_6 = 0x0040,
+			Channel_7 = 0x0080,
+			Channel_8 = 0x0100,
+			Channel_9 = 0x0200,
+			Channel_10 = 0x0400,
+			Channel_11 = 0x0800,
+			Channel_12 = 0x1000,
+			Channel_13 = 0x2000,
+			Channel_14 = 0x4000,
+			Channel_15 = 0x8000,
+		};
 
 		class AnalogDigitalConverter {
 		public:
-			AnalogDigitalConverter(Comm::SPI::ChannelPtr channel, uint16_t channels);
-			~AnalogDigitalConverter();
+			AnalogDigitalConverter(const AnalogDigitalConverter&) = delete;
+			AnalogDigitalConverter& operator=(const AnalogDigitalConverter&) = delete;
+
+			AnalogDigitalConverter(AnalogDigitalConverter&&) = default;
+			AnalogDigitalConverter& operator=(AnalogDigitalConverter&&) = default;
+
+			AnalogDigitalConverter(Comm::SPI::ChannelPtr&& channel, std::bitset<16> channels);
+
+			~AnalogDigitalConverter() = default;
 
 			void update();
-			AnalogInput& getAnalogInput(uint32_t channel);
+			//void udpate(uint16_t channelMask);
 
+			AnalogInput& getAnalogInput(uint32_t channel);
 		private:
 
-			void programAuto1Mode(uint16_t channels);
+			void programAuto1Mode();
 			void startAuto1Mode();
 
 			static uint32_t const MaxChannels = 16;
 
+			std::bitset<16> mChannels;
 			Comm::SPI::ChannelPtr mSpiChannel;
-			AnalogInput mInputs[MaxChannels];
+			std::array<AnalogInput, MaxChannels> mInputs;
 		};
 	}
 }

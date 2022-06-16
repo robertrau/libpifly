@@ -18,7 +18,7 @@ namespace PiFly {
 		public:
 			NMEAProtocol(SerialPort& serialPort);
 
-			virtual bool getResult(GpsResult& gpsResult);
+			bool getResult(GpsResult& gpsResult) override;
 
 		private:
 			SerialPort& mSerialPort;

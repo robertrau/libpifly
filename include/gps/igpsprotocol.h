@@ -7,12 +7,12 @@
 
 namespace PiFly {
 	namespace GPS {
-		typedef enum {
+		enum FixType {
 			FixType_NoFix = 1,
 			FixType_2D = 2,
 			FixType_3D = 3,
 			FixType_3DDGNSS = 4,
-		} FixType;
+		};
 		
 		struct GpsResult {
 			FixType fixType;
@@ -31,6 +31,13 @@ namespace PiFly {
 
 		class IGpsProtocol {
 		public:
+			IGpsProtocol(const IGpsProtocol&) = delete;
+			IGpsProtocol& operator=(const IGpsProtocol&) = delete;
+			
+			IGpsProtocol() = default;
+			IGpsProtocol(IGpsProtocol&&) = default;
+			IGpsProtocol& operator=(IGpsProtocol&&) = default;
+			virtual ~IGpsProtocol() = default;
 			virtual bool getResult(GpsResult& result) = 0;
 		};
 	}

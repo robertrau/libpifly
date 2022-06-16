@@ -17,12 +17,13 @@ namespace PiFly {
 
 		class GpsException : public exception {
 		public:
+			GpsException() = default;
 			GpsException(string msg) :
-				mMessage(msg)
+				mMessage(std::move(msg))
 			{
 			}
 
-			virtual const char* what() const noexcept {
+			const char* what() const noexcept override {
 				stringstream ss;
 				ss << "GPS Error: ";
 				ss << mMessage;
@@ -30,7 +31,7 @@ namespace PiFly {
 			}
 		
 		private:
-			string mMessage;
+			string mMessage{""};
 		};
 
 		class GpsNackException : public GpsException {

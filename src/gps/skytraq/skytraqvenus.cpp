@@ -23,7 +23,7 @@ namespace PiFly {
 
 			void SkyTraqVenus::setPositionUpdateRate(uint8_t positionRate) {
 				const size_t payloadLength = 3;
-				SerialArray<payloadLength> command;
+				SerialArray<payloadLength> command{};
 
 				command[0] = Command_ConfigPositionRate;
 				command[1] = positionRate;
@@ -81,7 +81,7 @@ namespace PiFly {
 
 			void SkyTraqVenus::updateBaudrate(const SerialPort::Baudrate baud) {
 				const uint16_t payloadSize = 4;
-				SerialArray<payloadSize> command;
+				SerialArray<payloadSize> command{};
 				uint8_t gpsBaud;
 				switch(baud) {
 				case SerialPort::Baudrate_4800:
@@ -141,7 +141,7 @@ namespace PiFly {
 			}
 
 			void SkyTraqVenus::setMessageType(MessageType messageType) {
-				SerialArray<3> command;
+				SerialArray<3> command{};
 				command[0] = Command_MessageType;
 				command[1] = messageType;
 				command[2] = 0; // update to SRAM
@@ -154,7 +154,7 @@ namespace PiFly {
 
 			bool SkyTraqVenus::receiveAckNack() {
 				const size_t bytesToRead = 9;
-				SerialArray<bytesToRead> respBuffer;
+				SerialArray<bytesToRead> respBuffer{};
 
 				uint32_t attempts = 0;
 				bool haveAckNackMessage = false;
@@ -163,7 +163,7 @@ namespace PiFly {
 				
 				using namespace std::chrono;
 				auto startTime = steady_clock::now();
-				duration<double> elapsed;
+				duration<double> elapsed{};
 				
 				while(!haveAckNackMessage && (attempts < 5)) {
 					uint8_t startMsgByte;
@@ -215,7 +215,7 @@ namespace PiFly {
 						throw GpsFormatException("Incorrect checksum on response message");
 					}
 
-					Command commandByte = static_cast<Command>(respBuffer[4]);
+					auto commandByte = static_cast<Command>(respBuffer[4]);
 					if(Command_ACK == commandByte) {
 						return true;
 					} else if(Command_NACK == commandByte) {

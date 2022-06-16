@@ -12,7 +12,7 @@
 #include <sstream>
 #include <vector>
 
-#include <string.h>
+#include <cstring>
 
 #include "comm/commexception.h"
 #include "comm/spi/spi.h"
@@ -22,31 +22,20 @@ namespace PiFly {
 	namespace Comm {
 		namespace SPI {
 
-			class SerialPeripheralInterface;
-			
-			/** ChannelDeleter is a deleter class for std::unique_ptr
-			 * so that the SerialPeripheralInterface can be told when
-			 * a channel is no longer being used by anything, thus allowing
-			 * something else to grab and use the channel.
-			 */
-			class ChannelDeleter {
-				friend class SerialPeripheralInterface;
-				ChannelDeleter() = delete;
-				ChannelDeleter(SerialPeripheralInterface& spi);
-				SerialPeripheralInterface& mSpi;
-			public:
-				void operator()(Channel* channel) const;
-			};
-
-			typedef std::unique_ptr<Channel, ChannelDeleter> ChannelPtr;
+			using ChannelPtr = std::unique_ptr<Channel>;
 
 			class SerialPeripheralInterface {
 			private:
-				friend class ChannelDeleter;
+				friend class Channel;
 				void freeAssociatedChannel(ChipSelect cs);
 
 				bool mUsedChipSelects[ChipSelect_None];
 			public:
+				SerialPeripheralInterface(const SerialPeripheralInterface&) = delete;
+				SerialPeripheralInterface& operator=(const SerialPeripheralInterface&) = delete;
+
+				SerialPeripheralInterface(SerialPeripheralInterface&&) = default;
+				SerialPeripheralInterface& operator=(SerialPeripheralInterface&&) = default;
 
 				SerialPeripheralInterface();
 				~SerialPeripheralInterface();

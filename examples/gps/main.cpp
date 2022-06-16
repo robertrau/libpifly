@@ -33,8 +33,7 @@ void run_loop(Gps& gps)
 {
 	while(!interrupted.load())
 	{
-		GpsResult result;
-
+		GpsResult result{};
 		if(gps.getResult(result))
 		{
 			std::cout << "FixType: " << result.fixType <<
@@ -60,7 +59,7 @@ int main(int argc, char** argv)
 		skytraqVenus.updateBaudrate(SerialPort::Baudrate_230400);
 		std::cout << "Setting binary message type" << std::endl;
 		skytraqVenus.setMessageType(SkyTraqVenus::MessageType_Binary);
-		std::cout << "Setting update rate to 1Hz" << std::endl;
+		std::cout << "Setting update rate to 50Hz" << std::endl;
 		skytraqVenus.setPositionUpdateRate(50);
 
 		SkyTraqBinaryProtocol protocol(serialPort);
@@ -68,6 +67,11 @@ int main(int argc, char** argv)
 		std::cout << "Starting gps" << std::endl;
 		run_loop(protocol);
 
+		std::cout << "Setting update rate to 1Hz" << std::endl;
+		skytraqVenus.setPositionUpdateRate(1);
+		std::cout << "Setting message type to NMEA" << std::endl;
+		skytraqVenus.setMessageType(SkyTraqVenus::MessageType_NMEA);
+		std::cout << "Setting baudrate to 9600" << std::endl;
 		skytraqVenus.updateBaudrate(SerialPort::Baudrate_9600);
 	}
 	catch(GpsException& ex)

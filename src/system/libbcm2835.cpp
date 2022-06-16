@@ -18,7 +18,10 @@ namespace PiFly {
 			if(!initialized) {
 				auto ret = bcm2835_init();
 				if(ret == 1) {
+					std::cout << "Initialized libbcm2835" << std::endl;
 					initialized = true;
+				} else {
+					std::cout << "Failed to init libbcm2835 with error code " << ret << std::endl;
 				}
 			}
 			return initialized;

@@ -18,11 +18,16 @@ namespace PiFly {
 
 			class SkyTraqBinaryProtocol : public IGpsProtocol {
 			public:
+				SkyTraqBinaryProtocol(const SkyTraqBinaryProtocol&) = delete;
+				SkyTraqBinaryProtocol& operator=(const SkyTraqBinaryProtocol&) = delete;
 
+				SkyTraqBinaryProtocol(SkyTraqBinaryProtocol&&) = default;
+				SkyTraqBinaryProtocol& operator=(SkyTraqBinaryProtocol&&) = default;
+				
 				SkyTraqBinaryProtocol(SerialPort& serialPort);
-				~SkyTraqBinaryProtocol();
+				~SkyTraqBinaryProtocol() override = default;
 
-				bool getResult(GpsResult& result);
+				bool getResult(GpsResult& result) override;
 			private:
 				const static size_t updateBufferSize = 128;
 
