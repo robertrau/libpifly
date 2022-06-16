@@ -2,14 +2,7 @@
 
 function check_yn()
 {
-	read ans
-	if [ "$ans" = "n" ] || [ "$ans" = "N" ]; then\
-		echo "User chose n, exiting"
-		exit 1
-	elif [ "$ans" != "y" ] && [ "$ans" != "Y" ] && [ "$ans" != "" ]; then
-		echo "Un-recognized option, exiting"
-		exit 2
-	fi
+	echo "Continuing"
 }
 
 function get_install_dir()
@@ -58,7 +51,7 @@ function extract_rootfs()
 	cp os/Raspbian/root.tar.xz $rootfsDir
 	cd $rootfsDir
 	echo "Extracting root filesystem..."
-	tar xf root.tar.xz > /dev/null
+	tar xf root.tar.xz &> /dev/null
 	rm root.tar.xz
 }
 
@@ -100,8 +93,7 @@ function download_boost()
 
 	cd $downloadDir
 
-	curl -o boost_1_63_0.tar.bz2 https://superb-sea2.dl.sourceforge.net/project/boost/boost/1.63.0/boost_1_63_0.tar.bz2
-	tar xf boost_1_63_0.tar.bz2
+	git clone --recurse-submodules --depth 1 --branch boost-1.63.0 https://github.com/boostorg/boost.git boost_1_63_0
 }
 
 function build_install_boost()
@@ -113,12 +105,19 @@ function build_install_boost()
 		exit 1
 	fi
 
-	cd $downloadDir/boost_1_63_0	
-	
-	./bootstrap.sh --prefix=$rootfsDir/usr/local --with-python-version=3.4 --with-python-root=$rootfsDir/usr --with-python=/usr/bin/python3.4 --without-libraries=context,coroutine,coroutine2,mpi,atomic,chrono,container,date_time,exception,fiber,filesystem,graph,graph_parallel,iostreams,locale,log,math,metaparse,program_options,random,regex,serialization,signals,system,test,thread,timer,type_erasure,wave
+	pythonBin=$(which python3)
+
+	cd $downloadDir/boost_1_63_0
+
+	echo "Bootstrapping boost"
+	./bootstrap.sh --prefix=$rootfsDir/usr/local --with-python-version=3.4 --with-python-root=$rootfsDir/usr --with-python=$pythonBin --without-libraries=context,coroutine,coroutine2,mpi,atomic,chrono,container,date_time,exception,fiber,filesystem,graph,graph_parallel,iostreams,locale,log,math,metaparse,program_options,random,regex,serialization,signals,system,test,thread,timer,type_erasure,wave
 
 	cp $startDir/scripts/project-config.jam ./
 
+	echo "Building include tree"
+	./b2 headers
+
+	echo "Building & Installing boost"
 	./b2 install --user-config=project-config.jam toolset=gcc-arm --prefix=$rootfsDir/usr/local include=$rootfsDir/usr/include include=$rootfsDir/usr/include/arm-linux-gnueabihf cxxflags=-std=c++11
 }
 
@@ -234,7 +233,7 @@ check_for "unzip"
 check_for "tar"
 check_for "curl"
 check_for "sed"
-check_for "python3.4m"
+check_for "python3"
 check_for "g++"
 
 get_install_dir
