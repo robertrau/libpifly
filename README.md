@@ -10,7 +10,7 @@ libpifly library distinctive characteristics
      • Serial port interface for GPS receiver, 115200 baud.
      • Open source
 
-$${\color{red}Installation}$$
+${\color{red}Installation}$
 python 3.9 must be installed
 	
 As the GPS interface requires 115200 baud that is stable, Raspberry Pi modles 3 and Zero with Bluetooth require the Bluetooth to be shutdown. The onboard Bluetooth module uses the only baud rate stable UART on the board.
