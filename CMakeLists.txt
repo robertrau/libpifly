@@ -1,5 +1,6 @@
+# libpifly cmake file setup for Raspberry Pi with python 3.9 installed
 cmake_minimum_required(VERSION 2.8.9)
-set(CMAKE_TOOLCHAIN_FILE ./scripts/pi.cmake) 
+#set(CMAKE_TOOLCHAIN_FILE ./scripts/pi.cmake)          # uncomment for cross build on Ubuntu x86
 project(pifly)
 
 # Need to write a find module for this
@@ -19,9 +20,11 @@ set(lib${PROJECT_NAME}_LINK_LIBS pthread
 							  pifly
 							  bcm2835 
 							  CACHE INTERNAL "${PROJECT_NAME}: Link libs" FORCE)
+# uncomment next line for cross build on Ubuntu x86
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Weffc++ -pedantic -D__ARM_SIZEOF_WCHAR_T=32 -D__ARM_FEATURE_SAT=1 -D__ARM_ARCH_ISA_ARM=1 -D__ARMEL__=1 -D__ARM_FEATURE_UNALIGNED=1 -D__ARM_FP=12 -D__ARM_NEON_FP=4 -D__ARM_SIZEOF_MINIMAL_ENUM=4 -D__ARM_PCS_VFP=1 -D__ARM_FEATURE_LDREX=4 -D__ARM_FEATURE_QBIT=1 -D__ARM_ARCH_6__=1 -D__ARM_32BIT_STATE=1 -D__ARM_FEATURE_CLZ=1 -D__ARM_ARCH_ISA_THUMB=1 -D__ARM_ARCH=6 -D__ARM_FEATURE_SIMD32=1 -D__ARM_EABI__=1 -D__ARM_FEATURE_DSP=1 -U__x86_64__")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Weffc++ -pedantic -D__ARM_SIZEOF_WCHAR_T=32 -D__ARM_FEATURE_SAT=1 -D__ARM_ARCH_ISA_ARM=1 -D__ARMEL__=1 -D__ARM_FEATURE_UNALIGNED=1 -D__ARM_FP=12 -D__ARM_NEON_FP=4 -D__ARM_SIZEOF_MINIMAL_ENUM=4 -D__ARM_PCS_VFP=1 -D__ARM_FEATURE_LDREX=4 -D__ARM_FEATURE_QBIT=1 -D__ARM_ARCH_6__=1 -D__ARM_32BIT_STATE=1 -D__ARM_FEATURE_CLZ=1 -D__ARM_ARCH_ISA_THUMB=1 -D__ARM_ARCH=6 -D__ARM_FEATURE_SIMD32=1 -D__ARM_EABI__=1 -D__ARM_FEATURE_DSP=1 -U__x86_64__")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Weffc++ -pedantic")
+# comment this nextline for cross build on ubuntu x86
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -Weffc++ -pedantic")
 
 find_program(
 	CLANG_TIDY_EXE
@@ -38,11 +41,11 @@ else()
 endif()
 
 include_directories(${lib${PROJECT_NAME}_INCLUDE_DIRS}
-	${CMAKE_SYSROOT}/usr/include/c++/4.9
-	${CMAKE_SYSROOT}/usr/include/arm-linux-gnueabihf
-	${CMAKE_SYSROOT}/usr/include/arm-linux-gnueabihf/c++/4.9
-	${CMAKE_SYSROOT}/usr/lib/gcc/arm-linux-gnueabihf/4.9/include
-	${CMAKE_SYSROOT}/usr/include
+#	${CMAKE_SYSROOT}/usr/include/c++/4.9         # uncomment for cross build on Ubuntu x86
+#	${CMAKE_SYSROOT}/usr/include/arm-linux-gnueabihf         # uncomment for cross build on Ubuntu x86
+#	${CMAKE_SYSROOT}/usr/include/arm-linux-gnueabihf/c++/4.9         # uncomment for cross build on Ubuntu x86
+#	${CMAKE_SYSROOT}/usr/lib/gcc/arm-linux-gnueabihf/4.9/include         # uncomment for cross build on Ubuntu x86
+#	${CMAKE_SYSROOT}/usr/include            # uncomment for cross build on Ubuntu x86
 )
 
 add_compile_options(-pthread -std=c++11)
