@@ -1,20 +1,73 @@
 # libpifly
 C++ library for PiFly HAT board. See www.rau-deaver.org/Project_PiFly.html
 
-The library has support for
+libpifly library distinctive characteristics
 
      • 50 location per second, binary mode, SkyTraq GPS receiver
-     • ADS7957SDBTR 16 channel A/D converter (in progress)
+     • ADS7957SDBTR 10 bit, 16 channel, SPI  bus A/D converter (in progress)
+     		ADS7953SDBTR 12 bit compatible.
+     • Python bindings for python 3.9
+     • Serial port interface for GPS receiver, 115200 baud.
+     • Open source
 
-## Other libraries
-     https://github.com/richards-tech/RTIMULib2
-     https://github.com/adafruit/Adafruit_Python_PCA9685
-     http://rau-deaver.org/1-wire_keyboard.html
-     
-Many other tools are installed with piflysetup
+##$${\color{red}Installation}$$
+python 3.9 must be installed
+	
+As the GPS interface requires 115200 baud that is stable, Raspberry Pi modles 3 and Zero with Bluetooth require the Bluetooth to be shutdown. The onboard Bluetooth module uses the only baud rate stable UART on the board.
+	
+###Changes to the /boot/config.txt file:
+	
+####CPU Clock:
 
-     https://github.com/robertrau/piflySetupScript/
+	#uncomment to overclock the arm. 700 MHz is the default.
+	arm_freq=1200
+	over_voltage=4
 
+####Interfaces:
+	# Uncomment some or all of these to enable the optional hardware interfaces
+	dtparam=i2c_arm=on
+	dtparam=i2s=on
+	dtparam=spi=on
+	
+####Bluetooth
+	[all]
+	\# To use good UART for GPS on PiFly (takes it away from Bluetooth)
+	\# from:https://di-marco.net/blog/it/2020-04-18-tips-disabling_bluetooth_on_raspberry_pi/
+	dtoverlay=disable-bt 
+
+####Save and exit your editor
+####Reboot your Raspberry Pi
+
+###Finish disabling Bluetooth from the command line
+	sudo systemctl disable hciuart
+	sudo systemctl disable hciuart.service
+	sudo systemctl disable bluealsa.service
+	sudo systemctl disable bluetooth.service
+	sudo reboot
+
+###Prerequisites for building libpifly
+
+####cmake
+	sudo apt install cmake
+####python support
+	sudo apt install python3-dev
+	sudo apt install libpython3-dev
+####Boost support
+	sudo apt install libboost-python-dev
+	
+
+##Building
+###First navigate to your favorite build folder. Then get the source. 
+	git clone https://github.com/robertrau/libpifly.git
+	cd libpifly
+
+###Now add a build folder
+	mkdir libpifly_build
+	cd libpifly_build
+	
+###Build with cmake
+	cmake ..
+	5) cmail —build .
 
 # The PiFly board, the reason for libpifly
 
