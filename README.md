@@ -14,7 +14,17 @@ libpifly library distinctive characteristics
 python 3.9 must be installed
 	
 As the GPS interface requires 115200 baud that is stable, Raspberry Pi modles 3 and Zero with Bluetooth require the Bluetooth to be shutdown. The onboard Bluetooth module uses the only baud rate stable UART on the board.
+
+### Changes to the /boot/cmdline.txt file:
 	
+#### Remove Linux console port access to GPS serial port:
+
+	Remove console=serial0,115200
+	Remove console=tty1
+	Remove console=ttyAMA0\,115200    (only on older systems)
+	Remove kgdboc=ttyAMA0,115200      (only on older systems)
+
+
 ### Changes to the /boot/config.txt file:
 	
 #### CPU Clock:
@@ -31,8 +41,8 @@ As the GPS interface requires 115200 baud that is stable, Raspberry Pi modles 3 
 	
 #### Bluetooth
 	[all]
-	\# To use good UART for GPS on PiFly (takes it away from Bluetooth)
-	\# from:https://di-marco.net/blog/it/2020-04-18-tips-disabling_bluetooth_on_raspberry_pi/
+	# To use good UART for GPS on PiFly (takes it away from Bluetooth)
+	# from:https://di-marco.net/blog/it/2020-04-18-tips-disabling_bluetooth_on_raspberry_pi/
 	dtoverlay=disable-bt 
 
 #### Save and exit your editor
@@ -41,7 +51,7 @@ As the GPS interface requires 115200 baud that is stable, Raspberry Pi modles 3 
 ### Finish disabling Bluetooth from the command line
 	sudo systemctl disable hciuart
 	sudo systemctl disable hciuart.service
-	sudo systemctl disable bluealsa.service
+	sudo systemctl disable bluealsa.service   (may fail on later systems, it's OK)
 	sudo systemctl disable bluetooth.service
 	sudo reboot
 
@@ -67,7 +77,7 @@ As the GPS interface requires 115200 baud that is stable, Raspberry Pi modles 3 
 	
 ### Build with cmake
 	cmake ..
-	5) cmail —build .
+	cmail —build .
 
 # The PiFly board, the reason for libpifly
 
