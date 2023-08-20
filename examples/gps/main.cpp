@@ -20,6 +20,7 @@ using PiFly::GPS::GpsResult;
 using PiFly::GPS::GpsException;
 using PiFly::Comm::SerialPort;
 using PiFly::Comm::CommException;
+using PiFly::Comm::CommFdException;
 
 std::atomic<bool> interrupted;
 void term_handle(int sig)
@@ -53,9 +54,11 @@ int main(int argc, char** argv)
 
 	try
 	{
+		std::cout << "Grabbing serial port" << std::endl;
 		SerialPort serialPort("/dev/serial0", SerialPort::Baudrate_9600, false);
+		std::cout << "Got serial port, setting up sty traq" << std::endl;
 		SkyTraqVenus skytraqVenus(serialPort, 2.0);
-
+		std::cout << "Setting baud rate" << std::endl;
 		skytraqVenus.updateBaudrate(SerialPort::Baudrate_230400);
 		std::cout << "Setting binary message type" << std::endl;
 		skytraqVenus.setMessageType(SkyTraqVenus::MessageType_Binary);
@@ -76,11 +79,19 @@ int main(int argc, char** argv)
 	}
 	catch(GpsException& ex)
 	{
-		std::cout << ex.what() << std::endl;
+		std::cout << "Caught GpsException: " << ex.what() << std::endl;
+	}
+	catch(CommFdException& ex)
+	{
+		std::cout << "Caugth CommFdException: " << ex.message() << std::endl;
 	}
 	catch(CommException& ex)
 	{
-		std::cout << ex.what() << std::endl;
+		std::cout << "Caught CommException:" <<  ex.what() << std::endl;
+	}
+	catch(...)
+	{
+		std::cout << "Caught an unknown exception" << std::endl;
 	}
 
 	std::cout << "Hey there ;)" << std::endl;

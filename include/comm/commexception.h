@@ -26,29 +26,44 @@ namespace PiFly {
 
 			}
 
-			const char* what() const noexcept override {
+			virtual const char* what() const noexcept override {
 				return mMessage.c_str();
 			}
 
-		private:
+		protected:
 			string mMessage {""};
 		};
 
 		class CommFdException : public CommException {
 		public:
-			CommFdException(int _err, string file=__FILE__, int line=__LINE__) : 
+			CommFdException(int _err, string file=__FILE__, int line=__LINE__) :
 				err(_err)
 			{
 
 			}
 
+			CommFdException(string message, int _err, string file=__FILE__, int line=__LINE__) :
+				err(_err)
+			{
+				mMessage = message;
+			}
+
 			const char* what() const noexcept override {
 				stringstream ss;
-				ss << "Communication file descriptor error. errno = ";
+				ss << "Communication file descriptor error: " << mMessage << ":  errno = ";
 				ss << err;
 				ss << ": ";
 				ss << strerror(err);
 				return ss.str().c_str();
+			}
+
+			const string message() {
+				stringstream ss;
+				ss << "Comm fd error: " << mMessage << ": errno = ";
+				ss << err;
+				ss << ": ";
+				ss << strerror(err);
+				return ss.str();
 			}
 
 		private:

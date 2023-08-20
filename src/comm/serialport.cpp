@@ -18,6 +18,7 @@ namespace PiFly
 			serialTTY(),
 			mBlocking(blocking)
 		{
+			std::cout << "Opening serial port at " << devPath << std::endl;
 			// Disable var-arg linting for these open calls, we have no other interface to use.
 			if(mBlocking) {
 				serialFd = ::open(devPath.c_str(), O_RDWR); //NOLINT(cppcoreguidelines-pro-type-vararg)
@@ -25,29 +26,34 @@ namespace PiFly
 				serialFd = ::open(devPath.c_str(), O_RDWR | O_NONBLOCK | O_NDELAY); //NOLINT(cppcoreguidelines-pro-type-vararg)
 			}
 
+			std::cout << "Got serial fd: " << serialFd << std::endl;
 			if(serialFd < 0) {
 				throw CommFdException(errno);
 			}
 
+			std::cout << "memsetting serialTTY struct" << std::endl;
 			memset(&serialTTY, 0, sizeof(termios));
 
+			std::cout << "Getting serial port attributes" << std::endl;
 			if(tcgetattr(serialFd, &serialTTY) != 0) {
-				throw CommFdException(errno);
+				throw CommFdException("Failed getting tcattributes", errno);
 			}
 
 			if(cfsetispeed(&serialTTY, linuxBaudrateMap(baud)) != 0) {
-				throw CommFdException(errno);
+				throw CommFdException("Failed setting i speed", errno);
 			}
 			
 			if(cfsetospeed(&serialTTY, linuxBaudrateMap(baud)) != 0) {
-				throw CommFdException(errno);
+				throw CommFdException("Failed setting o speed", errno);
 			}
 			
+			std::cout << "Making it a raw serial port" << std::endl;
 			// make a raw serial port
 			cfmakeraw(&serialTTY);
 
+			std::cout << "Setting attribute" << std::endl;
 			if(tcsetattr(serialFd, TCSANOW, &serialTTY) != 0) {
-				throw CommFdException(errno);
+				throw CommFdException("Failed setting tcattributes", errno);
 			}
 		}
 
