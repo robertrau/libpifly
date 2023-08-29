@@ -1,0 +1,22 @@
+GPS CSV format - Detection of columns containing coordinates is based on attribute name - please rename columns containing coordinates to any of these:
+x, xcoord, xcoordinate, coordx, coordinatex, longitude, long (and of course: y, ycoord, ycoordinate, coordy, coordinatey, latitude, lat). If you have geometry as WKT or WKB, use wkt or wkt name for the geometry column name.
+
+from https://mygeodata.cloud/converter/csv-to-gps
+
+For wkt information, see: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry
+
+
+
+Preferred File Types for Google Maps Content Partners (GMCP)
+
+.SHP (Shapefile): Submit required file extensions (at least the .shp, .shx, .dbf, and .prj) in a .zip file (zipped file)
+
+.CSV (Comma Separated Value): Submit data separated by commas, with each column surrounded by quotes.  Header row and spatial attributes (latitude & longitude coordinates) are required.
+
+.KML/.KMZ (Keyhole Markup Language): Represent the data as SchemaData and SimpleFields (preferred) or ExtendedData. .kml/.kmz files must have address fields. KML/KMZ files can be created with Google Earth - To view more information on this, click this link https://www.youtube.com/user/googleearthweb
+
+
+https://developers.google.com/kml/documentation/altitudemode
+
+.kml tutorial
+https://developers.google.com/kml/documentation/kml_tut
