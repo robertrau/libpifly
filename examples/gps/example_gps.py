@@ -1,5 +1,10 @@
 #! /usr/bin/python3
-
+##
+# @brief
+# GPS python script for libpifly on PiFly board with SkyTraq Venus838 GPS receiver
+#
+# @author Rob Rau
+# 
 import signal
 import sys
 
@@ -33,10 +38,10 @@ if __name__ == "__main__":
 			stringList.append("FixType: " + str(result.fixType))
 			stringList.append(" Satellites in view: " + str(result.satellitesInView))
 			stringList.append(" GNSS Week: " + str(result.GNSSWeek))
-			stringList.append(" TOW: " + str(result.tow/100.0) + "s")
-			stringList.append(" mean sea level: " + str(result.meanSeaLevel/100.0))
-			stringList.append(" lat: " + str(result.latitude*1e-7) + "deg")
-			stringList.append(" long: " + str(result.longitude*1e-7) + "deg")
+			stringList.append(f" TOW: {result.tow/100.0:.2f} s")
+			stringList.append(f" mean sea level: {result.meanSeaLevel/100.0:.1f}")
+			stringList.append(f" lat: {result.latitude*1e-7:.7f} deg")
+			stringList.append(f" long: {result.longitude*1e-7:.7f} deg")
 			print(''.join(stringList))
 
 	# Set the GPS back to defaults

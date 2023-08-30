@@ -1,0 +1,1 @@
+export PYTHONPATH=/home/robertrau/Documents/git/libpifly/libpifly_build/python_wrapper/
