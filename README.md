@@ -77,7 +77,7 @@ As the GPS interface requires 115200 baud that is stable, Raspberry Pi modles 3 
 	
 ### Build with cmake
 	cmake ..
-	cmail --build .
+	cmake --build .
 
 # The PiFly board, the reason for libpifly
 
