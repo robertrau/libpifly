@@ -84,7 +84,7 @@ Here is an example for the Raspberry Pi Zero 2 W. Uncomment to overclock the arm
 	sudo make install
 
 ### Now add a build folder
-	cd ../..      (you should now be in the libpifly directory)
+	cd ../../..      (you should now be in the libpifly directory)
 	mkdir libpifly_build
 	cd libpifly_build
 	
