@@ -28,8 +28,8 @@ As the GPS interface requires 115200 baud that is stable, Raspberry Pi modles 3 
 ### Changes to the /boot/config.txt file:
 	
 #### CPU Clock:
+Here is an example for the Raspberry Pi Zero 2 W. Uncomment to overclock the arm. 700 MHz is the default, you can change to 1.2GHz with these changes:
 
-	#uncomment to overclock the arm. 700 MHz is the default.
 	arm_freq=1200
 	over_voltage=4
 
