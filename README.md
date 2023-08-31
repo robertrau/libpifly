@@ -66,12 +66,25 @@ Here is an example for the Raspberry Pi Zero 2 W. Uncomment to overclock the arm
 	sudo apt install libboost-python-dev
 	
 
+	
+
 ## Building
 ### First navigate to your favorite build folder. Then get the source. 
 	git clone https://github.com/robertrau/libpifly.git
 	cd libpifly
+### bcm2835 support
+	cd examples
+	mkdir bcm2835
+	cd bcm2835/
+	curl -O http://www.airspayce.com/mikem/bcm2835/bcm2835-1.73.tar.gz
+	tar -xvzf bcm2835-1.73.tar.gz
+	cd bcm2835-1.73/
+	./configure
+	make
+	sudo make install
 
 ### Now add a build folder
+	cd ../..      (you should now be in the libpifly directory)
 	mkdir libpifly_build
 	cd libpifly_build
 	
