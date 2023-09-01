@@ -2,6 +2,8 @@
 
 import signal
 import sys
+from datetime import datetime
+
 
 import libpifly_python
 from pifly.comm import SerialPort
@@ -17,6 +19,11 @@ def sigintHandler(signal, frame):
 if __name__ == "__main__":
 	signal.signal(signal.SIGINT, sigintHandler)
 
+    # Open Results output file
+    TimeNow = datetime.now()
+    ResultFileTimeStamp = TimeNow.strftime("%Y%m%d-%H%M")
+    PathFile_fd = open("PiFlyResults" + ResultFileTimeStamp + ".kml", 'w')
+
 	serialPort = SerialPort("/dev/serial0", SerialPort.Baudrate._9600, False)
 	skytraqVenus = SkyTraqVenus(serialPort, 2.0)
 
@@ -26,7 +33,6 @@ if __name__ == "__main__":
 	skytraqVenus.setPositionUpdateRate(50)
 	protocol = SkyTraqBinaryProtocol(serialPort)
 
-    TimeNow = datetime.now()
     stringList = []
     stringList.append('<?xml version="1.0" encoding="UTF-8"?>\n')
     stringList.append('<kml xmlns="http://www.opengis.net/kml/2.2">\n')
@@ -54,7 +60,7 @@ if __name__ == "__main__":
     
     kmlHeader = ''.join(stringList)
 
-    print(kmlHeader)
+ResultFile_fd.write(kmlHeader)
     
 	result = GpsResult()
 	while running:
@@ -65,17 +71,17 @@ if __name__ == "__main__":
 
 
 
-    stringList.append(        </coordinates>\n')
-    stringList.append(      </LineString>\n')
-    stringList.append(    </Placemark>\n')
-    stringList.append(  </Folder>\n')
-    stringList.append(</Document>\n')
-    stringList.append(</kml>\n')
+    stringList = []
+    stringList.append('        </coordinates>\n')
+    stringList.append('      </LineString>\n')
+    stringList.append('    </Placemark>\n')
+    stringList.append('  </Folder>\n')
+    stringList.append('</Document>\n')
+    stringList.append('</kml>\n')
 
-	print(''.join(stringList))
+    ResultFile_fd.write(''.join(stringList))
     
-    
-    
+
     
 	# Set the GPS back to defaults
 	serialPort.flush()
