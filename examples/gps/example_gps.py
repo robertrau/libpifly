@@ -8,7 +8,7 @@
 import signal
 import sys
 
-import libpifly
+import libpifly_python
 from pifly.comm import SerialPort
 from pifly.gps import GpsResult
 from pifly.gps.skytraq import *
