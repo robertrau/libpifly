@@ -6,9 +6,20 @@
 # GPS script for libpifly on PiFly board with SkyTraq Venus838 GPS receiver output to kml file
 #
 # @author Rob Rau
-#
-# Updated to kml output by Robert Rau
 # 
+#
+# See: https://developers.google.com/kml/documentation/kml_tut
+#
+#
+# Written: 6/17/2018
+#    Rev.: 1.00
+#      By: Rob Rau
+#
+# Updated: 9/3/2023
+#    Rev.: 1.01
+#      By: Robert S. Rau
+# Changes: kml file output version
+#
 
 import signal
 import sys
@@ -21,10 +32,12 @@ from pifly.gps import GpsResult
 from pifly.gps.skytraq import *
 
 running = True
+
 def sigintHandler(signal, frame):
     print("interrupt")
     global running
     running = False
+    
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, sigintHandler)
@@ -74,7 +87,7 @@ if __name__ == "__main__":
     while running:
         if protocol.getResult(result):
 
-            ResultFile_fd.write(f"        {result.latitude*1e-7:.7f},{result.longitude*1e-7:.7f},{result.meanSeaLevel/100.0:.2f}\n")
+            ResultFile_fd.write(f"        {result.longitude*1e-7:.7f},{result.latitude*1e-7:.7f},{result.meanSeaLevel/100.0:.2f} \n")
 
 
 
