@@ -12,26 +12,30 @@ from pifly.gps.skytraq import *
 
 running = True
 def sigintHandler(signal, frame):
-	print("interrupt")
-	global running
-	running = False
+    print("interrupt")
+    global running
+    running = False
 
 if __name__ == "__main__":
-	signal.signal(signal.SIGINT, sigintHandler)
+    signal.signal(signal.SIGINT, sigintHandler)
 
     # Open Results output file
     TimeNow = datetime.now()
     ResultFileTimeStamp = TimeNow.strftime("%Y%m%d-%H%M")
     PathFile_fd = open("PiFlyResults" + ResultFileTimeStamp + ".kml", 'w')
 
-	serialPort = SerialPort("/dev/serial0", SerialPort.Baudrate._9600, False)
-	skytraqVenus = SkyTraqVenus(serialPort, 2.0)
+    serialPort = SerialPort("/dev/serial0", SerialPort.Baudrate._9600, False)
+    skytraqVenus = SkyTraqVenus(serialPort, 2.0)
 
-	serialPort.flush()
-	skytraqVenus.updateBaudrate(SerialPort.Baudrate._230400)
-	skytraqVenus.setMessageType(SkyTraqVenus.MessageType.Binary)
-	skytraqVenus.setPositionUpdateRate(50)
-	protocol = SkyTraqBinaryProtocol(serialPort)
+    serialPort.flush()
+    skytraqVenus.updateBaudrate(SerialPort.Baudrate._230400)
+    skytraqVenus.setMessageType(SkyTraqVenus.MessageType.Binary)
+    skytraqVenus.setPositionUpdateRate(50)
+    protocol = SkyTraqBinaryProtocol(serialPort)
+    
+    # open file for coordinates
+    StartTime = datetime.now()
+    ResultFile_fd = open("PiFly_gps_" + StartTime.strftime("%Y%m%d-%H%M%S" + ".kml", "w"))
 
     stringList = []
     stringList.append('<?xml version="1.0" encoding="UTF-8"?>\n')
@@ -60,14 +64,13 @@ if __name__ == "__main__":
     
     kmlHeader = ''.join(stringList)
 
-ResultFile_fd.write(kmlHeader)
+    ResultFile_fd.write(kmlHeader)
     
-	result = GpsResult()
-	while running:
-		if protocol.getResult(result):
-			stringList = []
+    result = GpsResult()
+    while running:
+        if protocol.getResult(result):
 
-			stringList.append("          " + str(result.latitude*1e-7) + "," + str(result.longitude*1e-7) + "," + str(result.meanSeaLevel/100.0))
+            ResultFile_fd.write("          " + str(result.latitude*1e-7) + "," + str(result.longitude*1e-7) + "," + str(result.meanSeaLevel/100.0))
 
 
 
@@ -83,8 +86,8 @@ ResultFile_fd.write(kmlHeader)
     
 
     
-	# Set the GPS back to defaults
-	serialPort.flush()
-	skytraqVenus.setPositionUpdateRate(1)
-	skytraqVenus.setMessageType(SkyTraqVenus.MessageType.NMEA)
-	skytraqVenus.updateBaudrate(SerialPort.Baudrate._9600)
+    # Set the GPS back to defaults
+    serialPort.flush()
+    skytraqVenus.setPositionUpdateRate(1)
+    skytraqVenus.setMessageType(SkyTraqVenus.MessageType.NMEA)
+    skytraqVenus.updateBaudrate(SerialPort.Baudrate._9600)
