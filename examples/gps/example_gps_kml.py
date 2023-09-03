@@ -18,7 +18,7 @@
 # Updated: 9/3/2023
 #    Rev.: 1.01
 #      By: Robert S. Rau
-# Changes: kml file output version
+# Changes: kml file output version, added SIGTERM so ssh reconnect could terminate stript correctly
 #
 
 import signal
@@ -41,6 +41,7 @@ def sigintHandler(signal, frame):
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, sigintHandler)
+    signal.signal(signal.SIGTERM, sigintHandler)
 
     serialPort = SerialPort("/dev/serial0", SerialPort.Baudrate._9600, False)
     skytraqVenus = SkyTraqVenus(serialPort, 2.0)
