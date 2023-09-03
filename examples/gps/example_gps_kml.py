@@ -1,4 +1,14 @@
 #! /usr/bin/python3
+#
+#
+##
+# @brief
+# GPS script for libpifly on PiFly board with SkyTraq Venus838 GPS receiver output to kml file
+#
+# @author Rob Rau
+#
+# Updated to kml output by Robert Rau
+# 
 
 import signal
 import sys
@@ -19,11 +29,6 @@ def sigintHandler(signal, frame):
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, sigintHandler)
 
-    # Open Results output file
-    TimeNow = datetime.now()
-    ResultFileTimeStamp = TimeNow.strftime("%Y%m%d-%H%M")
-    PathFile_fd = open("PiFlyResults" + ResultFileTimeStamp + ".kml", 'w')
-
     serialPort = SerialPort("/dev/serial0", SerialPort.Baudrate._9600, False)
     skytraqVenus = SkyTraqVenus(serialPort, 2.0)
 
@@ -35,13 +40,13 @@ if __name__ == "__main__":
     
     # open file for coordinates
     StartTime = datetime.now()
-    ResultFile_fd = open("PiFly_gps_" + StartTime.strftime("%Y%m%d-%H%M%S" + ".kml", "w"))
+    ResultFile_fd = open("PiFly_gps_" + StartTime.strftime("%Y%m%d-%H%M%S") + ".kml", "w")
 
     stringList = []
     stringList.append('<?xml version="1.0" encoding="UTF-8"?>\n')
     stringList.append('<kml xmlns="http://www.opengis.net/kml/2.2">\n')
     stringList.append('  <Document>\n')
-    stringList.append('    <name>PiFly ' + TimeNow.strftime("%m/%d/%y  %H:%M:%S") + '</name>\n')
+    stringList.append('    <name>PiFly ' + StartTime.strftime("%m/%d/%y  %H:%M:%S") + '</name>\n')
     stringList.append('    <open>1</open>')     # Specifies whether a Document or Folder appears closed or open when first loaded into the Places panel. 0=collapsed (the default), 1=expanded.
     stringList.append('    <description>RocketFlight</description>')
     stringList.append('  <Folder>\n')
@@ -50,7 +55,7 @@ if __name__ == "__main__":
     stringList.append('      <LineStyle><color>FF0000FF</color><width>8</width></LineStyle>\n')
     stringList.append('      <BalloonStyle>\n')
     stringList.append('        <text>\n')
-    stringList.append('GPS Data\n')
+    stringList.append('         GPS Data\n')
     stringList.append('        </text>\n')
     stringList.append('      </BalloonStyle>\n')
     stringList.append('    </Style>\n')
@@ -63,14 +68,13 @@ if __name__ == "__main__":
     stringList.append('        <coordinates>\n')
     
     kmlHeader = ''.join(stringList)
-
     ResultFile_fd.write(kmlHeader)
     
     result = GpsResult()
     while running:
         if protocol.getResult(result):
 
-            ResultFile_fd.write("          " + str(result.latitude*1e-7) + "," + str(result.longitude*1e-7) + "," + str(result.meanSeaLevel/100.0))
+            ResultFile_fd.write(f"        {result.latitude*1e-7:.7f},{result.longitude*1e-7:.7f},{result.meanSeaLevel/100.0:.2f}\n")
 
 
 
