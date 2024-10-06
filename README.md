@@ -13,7 +13,7 @@ libpifly library distinctive characteristics
 ## Installation
 python 3.9 must be installed
 	
-As the GPS interface requires 115200 baud that is stable, Raspberry Pi modles 3 and Zero with Bluetooth require the Bluetooth to be shutdown. The onboard Bluetooth module uses the only baud rate stable UART on the board.
+As the GPS interface requires 115200 baud that is stable, Raspberry Pi models 3 and Zero with Bluetooth require the Bluetooth to be shutdown. The onboard Bluetooth module uses the only baud rate stable UART on the board.
 
 ### Changes to the /boot/cmdline.txt file:
 	
@@ -111,7 +111,7 @@ The PiFly board is designed for drones, rocketry, RC airplanes, balloons, and HA
 
 
 ## PiFly Hardware Features
-**• Power:** Designed to run on 3.2 to 12 volts, it is intended to run on one to three LiPo cells, but any power supply will do. A single power supply powers the Raspberry Pi, the HAT board, and its USB device from a 5 volt 2 amp buck-boost switching power supply. (The four high current outputs require at least 4.5 volts; i.e. two or three LiPo cells)
+**• Power:** Designed to run on 3.2 to 12 volts, it is intended to run on one to three LiPo cells, but any power supply will do. A single power supply powers the Raspberry Pi, the HAT board, and its USB device from a 5 volt 2 amp buck-boost switching power supply. The four high current outputs require at least 4.5 volts (two or three LiPo cells)
 
 **• Raspberry Pi compatible:** The PiFly is intended to connect to the Raspberry Pi Zero so that components of each board face away from the middle. A 40 pin socket could be soldered to the top of the board for use on the Raspberry Pi 3, or any 40 pin Raspberry Pi.
 
@@ -119,7 +119,7 @@ The PiFly board is designed for drones, rocketry, RC airplanes, balloons, and HA
 
 **• Servos:** Can control up to eight servos. (Standard 6 volt servos will require 2 LiPo cells, higher voltage tolerant servos can use 2 or 3 LiPo cells)
 
-**• High Current Outputs:** Intended for Rocket upper stage igniters and parachutes, these high current, high side drivers have borh voltage and current diagnostics. There is a redundant enable system to prevent false assertions. Connections use press-to-release terminal blocks so there is no possibility of forgetting to tighten a screw terminal.
+**• High Current Outputs:** Intended for Rocket upper stage igniters and parachutes, these high current, high side drivers have both voltage and current diagnostics. There is a redundant enable system to prevent false assertions. Connections use press-to-release terminal blocks so there is no possibility of forgetting to tighten a screw terminal.
 
 **• Support for headless operation:**  There is a shutdown button and a shutdown acknowledgment LED for safe headless shutdown. There is also a low battery comparator that can assert the shutdown request.
 
@@ -127,7 +127,7 @@ The PiFly board is designed for drones, rocketry, RC airplanes, balloons, and HA
 
 **• USB redirected:** Cannot use the USB port in the 32mm width. The USB test points on a Raspberry Pi Zero can be soldered to test points on the HAT board for the USB type A connector and still fit in a 38mm tube coupler.
 
-**• GPS:** The board uses the Skytrac Venus838 module. In binary mode this device can make 50 location updates per second. It has an SMA connector for an external antenna. This is required for the use of a helical, omni directional antenna. GPS data can be backed up with a super capacitor that has a connector for an external rechargeable coin cell. There is existing support for ASCII NMEA-0183 compatible output at 10 location updates per second. The libpifly library has support for binary mode at 50 locations per second. There is also a four pin connector for an external GPS if the PiFly board is built without the onboard GPS.
+**• GPS:** The board uses the Skytraq Venus838 module. In binary mode this device can make 50 location updates per second. It has an SMA connector for an external antenna. This is required for the use of a helical, omni directional antenna. GPS data can be backed up with a super capacitor that has a connector for an external rechargeable coin cell. There is existing support for ASCII NMEA-0183 compatible output at 10 location updates per second. The libpifly library has support for binary mode at 50 locations per second. There is also a four pin connector for an external GPS if the PiFly board is built without the onboard GPS.
 
 **• I/Os:** Most have ESD protection.
 
@@ -135,11 +135,11 @@ The PiFly board is designed for drones, rocketry, RC airplanes, balloons, and HA
 
 **• Keypad support:** A connector for either a standard six-key keypad or a standard 12-key keypad connected through a resistor array to a A/D input. With an external resistor array 26 keys are possible. See http://rau-deaver.org/1-wire_keyboard.html
 
-**• High G linear accelerometer:** Uses NXP (Qualcom) MMA6555KW as on Altus Metrum’s TeleMega. Uses SPI interface.
+**• High G linear accelerometer:** Uses NXP MMA6555KW as on Altus Metrum’s TeleMega. Uses SPI interface.
 
 **• Barometric pressure sensor:** Uses a Measurement Specialties (TE Connectivity) MS560702BA03-00 as on Altus Metrum’s TeleMega. Uses SPI interface.
 
-**• 9 axis inertial and magnetic platform:** Uses an Invensense (TDK) MPS-9250 for 3-axis acceleration, 3-axis gyro, and 3-axis magnetometer. Mounted on board centerline. Uses I2C bus.
+**• 9 axis inertial and magnetic platform:** Uses an TDK MPS-9250 for 3-axis acceleration, 3-axis gyro, and 3-axis magnetometer. Mounted on board centerline. Uses I2C bus.
 
 **• Humidity sensor:** Uses ST’s HTS221TR sensor. Uses I2C bus.
 
@@ -151,7 +151,7 @@ The PiFly board is designed for drones, rocketry, RC airplanes, balloons, and HA
 
 **• Time of Day Clock:** Maxim DS3231S using the GPS Super Cap/Battery Backup.
 
-**• Maxim 1-Wire bus controller.** Full support for 5 volt higher current devices.
+**• Maxim 1-Wire bus controller.** Full support for 5 volt, higher current, devices.
 
 **• Quad tachometer Input:** compatible with Spektrum SPM1452 sensors. Uses an Analog Devices ADT7470.
 
